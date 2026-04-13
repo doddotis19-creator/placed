@@ -311,7 +311,7 @@ export default function InternshipsClient({ internships, userSectors, userLocati
           <h3 className="font-semibold text-slate-900 mb-2">No listings found</h3>
           <p className="text-sm text-slate-500 max-w-xs mx-auto">
             {tab === 'For You'
-              ? 'We couldn't find matches. Try updating your sector preferences in Settings.'
+              ? "We couldn\u2019t find matches. Try updating your sector preferences in Settings."
               : 'Try adjusting your search or sector filter.'}
           </p>
         </div>
