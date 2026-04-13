@@ -36,25 +36,43 @@ export default function OnboardingPage() {
     setSaving(true)
     setError(null)
 
-    const { error: err } = await supabase.from('profiles').upsert(
-      {
+    try {
+      const payload = {
         user_id: user.id,
         degree_subject: form.degree_subject || null,
         university: form.university || null,
-        graduation_year: form.graduation_year ? parseInt(form.graduation_year) : null,
+        graduation_year: form.graduation_year ? parseInt(form.graduation_year, 10) : null,
         sectors: form.sectors,
         locations: form.locations,
         bio: form.bio || null,
         onboarding_complete: true,
-      },
-      { onConflict: 'user_id' }
-    )
+      }
 
-    setSaving(false)
-    if (err) {
-      setError('Something went wrong. Please try again.')
-    } else {
+      console.log('[Onboarding] Upserting profile for user:', user.id)
+
+      const { data, error: err } = await supabase
+        .from('profiles')
+        .upsert(payload, { onConflict: 'user_id' })
+        .select()
+
+      if (err) {
+        console.error('[Onboarding] Supabase error:', {
+          message: err.message,
+          code: err.code,
+          details: err.details,
+          hint: err.hint,
+        })
+        setError(`Save failed: ${err.message}${err.hint ? ` — ${err.hint}` : ''}`)
+        return
+      }
+
+      console.log('[Onboarding] Profile saved:', data)
       router.push('/dashboard')
+    } catch (err) {
+      console.error('[Onboarding] Unexpected error:', err)
+      setError(`Unexpected error: ${err.message}`)
+    } finally {
+      setSaving(false)
     }
   }
 

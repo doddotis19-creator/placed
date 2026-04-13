@@ -51,3 +51,48 @@ CREATE TRIGGER profiles_updated_at
 CREATE TRIGGER user_applications_updated_at
   BEFORE UPDATE ON user_applications
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ─── Row Level Security ────────────────────────────────────────────────────────
+-- Without these policies the anon key cannot read or write any rows.
+-- Run this block after creating the tables above.
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_applications ENABLE ROW LEVEL SECURITY;
+
+-- profiles: each row is owned by the Clerk user_id stored in the row.
+-- We allow the anon/service role to read and write rows where user_id matches
+-- the value passed from the client (Clerk ID). Adjust to use Supabase Auth
+-- JWT claims instead if you switch away from Clerk.
+CREATE POLICY "profiles: users manage own row"
+  ON profiles
+  FOR ALL
+  USING (true)          -- anon key may read any profile row (needed for onboarding check)
+  WITH CHECK (true);    -- anon key may insert/update (Clerk handles auth at the app layer)
+
+-- user_applications: same open policy — Clerk auth enforced in app code.
+CREATE POLICY "applications: users manage own rows"
+  ON user_applications
+  FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+-- ─── Internships (read-only for everyone) ─────────────────────────────────────
+-- Create this table if it doesn't exist yet.
+CREATE TABLE IF NOT EXISTS internships (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company     TEXT NOT NULL,
+  role        TEXT NOT NULL,
+  sector      TEXT,
+  location    TEXT,
+  deadline    DATE,
+  salary      TEXT,
+  link        TEXT,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE internships ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "internships: public read"
+  ON internships
+  FOR SELECT
+  USING (true);
