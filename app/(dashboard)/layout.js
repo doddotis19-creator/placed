@@ -22,12 +22,12 @@ export default async function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-zinc-50 overflow-hidden">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Top bar */}
-        <header className="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-end shrink-0">
+        <header className="bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-end shrink-0 gap-3">
           <UserButton afterSignOutUrl="/" />
         </header>
 
