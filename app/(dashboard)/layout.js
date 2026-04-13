@@ -2,12 +2,23 @@ import { UserButton } from '@clerk/nextjs'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Sidebar from './_components/Sidebar'
+import { supabase } from '@/lib/supabase'
 
 export default async function DashboardLayout({ children }) {
   const { userId } = await auth()
 
   if (!userId) {
     redirect('/sign-in')
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarding_complete')
+    .eq('user_id', userId)
+    .single()
+
+  if (!profile?.onboarding_complete) {
+    redirect('/onboarding')
   }
 
   return (
