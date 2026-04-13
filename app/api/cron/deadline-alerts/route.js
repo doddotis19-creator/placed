@@ -7,15 +7,15 @@ export async function GET(request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Defer all heavy imports so they don't run at build time
-  const { createClient } = await import('@supabase/supabase-js')
+  // Defer heavy imports so they don't run at build time (module-level instantiation
+  // would fail during static page collection if env vars aren't yet set).
+  const { createServerSupabaseClient } = await import('@/lib/supabase-server')
   const { Resend } = await import('resend')
   const { clerkClient } = await import('@clerk/nextjs/server')
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  // Use the service-role client so this cron can read ALL users' applications
+  // without being blocked by user-scoped RLS policies.
+  const supabase = createServerSupabaseClient()
   const resend = new Resend(process.env.RESEND_API_KEY)
 
   const today = new Date()
