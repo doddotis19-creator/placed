@@ -3,18 +3,22 @@
 import { useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
+import {
+  TrendingUp, Cpu, Briefcase, Scale, Megaphone,
+  Wrench, Building2, ShoppingBag, Play, Heart,
+} from 'lucide-react'
 
 const SECTORS = [
-  { label: 'Finance', icon: '₤' },
-  { label: 'Technology', icon: '⌥' },
-  { label: 'Consulting', icon: '◆' },
-  { label: 'Law', icon: '⚖' },
-  { label: 'Marketing', icon: '◈' },
-  { label: 'Engineering', icon: '⚙' },
-  { label: 'Property', icon: '⌂' },
-  { label: 'FMCG', icon: '◉' },
-  { label: 'Media', icon: '▶' },
-  { label: 'Healthcare', icon: '+' },
+  { label: 'Finance', Icon: TrendingUp },
+  { label: 'Technology', Icon: Cpu },
+  { label: 'Consulting', Icon: Briefcase },
+  { label: 'Law', Icon: Scale },
+  { label: 'Marketing', Icon: Megaphone },
+  { label: 'Engineering', Icon: Wrench },
+  { label: 'Property', Icon: Building2 },
+  { label: 'FMCG', Icon: ShoppingBag },
+  { label: 'Media', Icon: Play },
+  { label: 'Healthcare', Icon: Heart },
 ]
 
 const LOCATIONS = ['London', 'Manchester', 'Edinburgh', 'Birmingham', 'Bristol', 'Remote', 'Open to anything']
@@ -181,7 +185,7 @@ export default function OnboardingPage() {
           {/* Step 2: Sectors */}
           {step === 2 && (
             <div className="grid grid-cols-2 gap-2">
-              {SECTORS.map(({ label, icon }) => {
+              {SECTORS.map(({ label, Icon }) => {
                 const active = form.sectors.includes(label)
                 return (
                   <button
@@ -195,7 +199,9 @@ export default function OnboardingPage() {
                       color: active ? '#818cf8' : '#A3A3A3',
                     }}
                   >
-                    <span className="text-base w-5 text-center shrink-0" style={{ color: active ? '#6366F1' : '#525252' }}>{icon}</span>
+                    <span className="w-4 shrink-0" style={{ color: active ? '#6366F1' : '#525252' }}>
+                      <Icon size={14} />
+                    </span>
                     {label}
                     {active && (
                       <svg className="w-3.5 h-3.5 ml-auto shrink-0" fill="none" stroke="#6366F1" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -218,14 +224,18 @@ export default function OnboardingPage() {
                     key={loc}
                     type="button"
                     onClick={() => toggleItem('locations', loc)}
-                    className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-150"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-150"
                     style={{
                       background: active ? 'rgba(99,102,241,0.12)' : '#161616',
                       border: `1px solid ${active ? '#6366F1' : '#222222'}`,
                       color: active ? '#818cf8' : '#A3A3A3',
                     }}
                   >
-                    {active && <span className="mr-1.5">✓</span>}
+                    {active && (
+                      <svg className="w-3 h-3 shrink-0" fill="none" stroke="#6366F1" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                    )}
                     {loc}
                   </button>
                 )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Sparkles } from 'lucide-react'
 
 const TABS = ['All', 'For You', 'Finance', 'Technology', 'Consulting', 'Law', 'Marketing', 'Engineering']
 
@@ -263,7 +264,9 @@ export default function InternshipsClient({ internships, userSectors, userLocati
                 border: isActive ? 'none' : '1px solid #222222',
               }}
             >
-              {isForYou ? '✦ For You' : t}
+              {isForYou ? (
+                <span className="flex items-center gap-1"><Sparkles size={11} />For You</span>
+              ) : t}
             </button>
           )
         })}

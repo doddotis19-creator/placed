@@ -2,6 +2,7 @@
 
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
+import { Sparkles, Search, LayoutGrid, Settings } from 'lucide-react'
 import { MOCK_APPLICATIONS } from '@/lib/mock-data'
 
 export default function DashboardPage() {
@@ -43,10 +44,10 @@ export default function DashboardPage() {
   }
 
   const quickActions = [
-    { label: 'Generate Cover Letter', href: '/cover-letter', icon: '✦', color: '#6366F1' },
-    { label: 'Find Internships', href: '/find-internships', icon: '⌕', color: '#8B5CF6' },
-    { label: 'My Applications', href: '/applications', icon: '⊞', color: '#F59E0B' },
-    { label: 'Settings', href: '/settings', icon: '⚙', color: '#525252' },
+    { label: 'Generate Cover Letter', href: '/cover-letter', Icon: Sparkles, color: '#6366F1' },
+    { label: 'Find Internships', href: '/find-internships', Icon: Search, color: '#8B5CF6' },
+    { label: 'My Applications', href: '/applications', Icon: LayoutGrid, color: '#F59E0B' },
+    { label: 'Settings', href: '/settings', Icon: Settings, color: '#525252' },
   ]
 
   return (
@@ -55,7 +56,7 @@ export default function DashboardPage() {
       <div className="mb-8">
         <p className="text-xs font-medium mb-1" style={{ color: '#525252' }}>{dateStr}</p>
         <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
-          {greeting}{user?.firstName ? `, ${user.firstName}` : ''} 👋
+          {greeting}{user?.firstName ? `, ${user.firstName}` : ''}
         </h1>
         <p className="text-sm mt-1" style={{ color: '#525252' }}>
           You have {activeApps} active application{activeApps !== 1 ? 's' : ''} in progress.
@@ -93,9 +94,9 @@ export default function DashboardPage() {
               <Link key={action.label} href={action.href}
                 className="flex items-center gap-3 p-4 rounded-[8px] transition-all duration-150 group"
                 style={{ background: '#161616', border: '1px solid #222222' }}>
-                <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0 text-sm font-bold"
+                <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0"
                   style={{ background: `${action.color}20`, color: action.color }}>
-                  {action.icon}
+                  <action.Icon size={15} />
                 </div>
                 <span className="text-sm font-medium" style={{ color: '#A3A3A3' }}>{action.label}</span>
               </Link>

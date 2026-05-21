@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const navItems = [
   {
@@ -70,6 +70,20 @@ export default function Sidebar() {
   const { user } = useUser()
   const [collapsed, setCollapsed] = useState(false)
 
+  // Persist collapsed state in localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('sidebar_collapsed')
+    if (stored !== null) setCollapsed(stored === 'true')
+  }, [])
+
+  function toggle() {
+    setCollapsed(prev => {
+      const next = !prev
+      localStorage.setItem('sidebar_collapsed', String(next))
+      return next
+    })
+  }
+
   return (
     <>
       {/* Desktop sidebar */}
@@ -99,7 +113,7 @@ export default function Sidebar() {
             </div>
           )}
           {!collapsed && (
-            <button onClick={() => setCollapsed(true)} className="p-1 rounded-md transition-all duration-150"
+            <button onClick={toggle} className="p-1 rounded-md transition-all duration-150"
               style={{ color: '#525252' }}
               title="Collapse sidebar">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -201,7 +215,7 @@ export default function Sidebar() {
         {/* Collapse expand button (when collapsed) */}
         {collapsed && (
           <div className="pb-4 flex justify-center">
-            <button onClick={() => setCollapsed(false)} className="p-2 rounded-[6px] transition-all duration-150"
+            <button onClick={toggle} className="p-2 rounded-[6px] transition-all duration-150"
               style={{ color: '#525252', background: '#161616', border: '1px solid #222222' }}
               title="Expand sidebar">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
