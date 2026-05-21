@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 
 const SECTORS = [
   { label: 'Finance', icon: '₤' },
@@ -56,30 +55,31 @@ export default function OnboardingPage() {
     setError(null)
 
     try {
-      const payload = {
-        user_id: user.id,
-        degree_subject: form.degree_subject || null,
-        university: form.university || null,
-        graduation_year: form.graduation_year ? parseInt(form.graduation_year, 10) : null,
-        sectors: form.sectors,
-        locations: form.locations,
-        bio: form.bio || null,
-        onboarding_complete: true,
-      }
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degree_subject: form.degree_subject,
+          university: form.university,
+          graduation_year: form.graduation_year,
+          sectors: form.sectors,
+          locations: form.locations,
+          bio: form.bio,
+        }),
+      })
 
-      const { error: err } = await supabase
-        .from('profiles')
-        .upsert(payload, { onConflict: 'user_id' })
-        .select()
+      const json = await res.json()
 
-      if (err) {
-        setError(`Save failed: ${err.message}${err.hint ? ` — ${err.hint}` : ''}`)
+      if (!res.ok) {
+        const msg = json?.error ?? `Server error (${res.status})`
+        const hint = json?.hint ? ` — ${json.hint}` : ''
+        setError(`Save failed: ${msg}${hint}`)
         return
       }
 
       router.push('/dashboard')
     } catch (err) {
-      setError(`Unexpected error: ${err.message}`)
+      setError(`Network error: ${err.message}`)
     } finally {
       setSaving(false)
     }
