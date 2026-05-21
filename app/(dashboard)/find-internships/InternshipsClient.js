@@ -187,7 +187,7 @@ function InternshipCard({ internship, userSectors, userLocations, onApply }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 mt-auto">
+      <div className="flex gap-2 mt-auto items-start">
         {/* Save to Wishlist */}
         <button
           onClick={handleSave}
@@ -211,31 +211,45 @@ function InternshipCard({ internship, userSectors, userLocations, onApply }) {
           {saved ? 'Saved' : saving ? '...' : 'Save'}
         </button>
 
-        {/* Apply button */}
-        {link ? (
-          <button
-            onClick={handleApply}
-            disabled={applied}
-            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
-            style={applied ? {
-              background: 'rgba(34,197,94,0.12)',
-              border: '1px solid rgba(34,197,94,0.3)',
-              color: '#22C55E',
-            } : {
-              background: '#6366F1',
-              color: '#fff',
-            }}
-          >
-            {applied && <CheckCircle2 size={12} />}
-            {applied ? 'Applied' : 'Apply'}
-          </button>
-        ) : (
-          <button disabled
-            className="flex-1 text-center text-xs font-semibold px-4 py-2 rounded-[6px] cursor-not-allowed"
-            style={{ background: '#161616', color: '#525252', border: '1px solid #222222' }}>
-            No link available
-          </button>
-        )}
+        {/* Apply button + label */}
+        <div className="flex-1 flex flex-col gap-1">
+          {link ? (
+            <button
+              onClick={handleApply}
+              disabled={applied}
+              className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
+              style={applied ? {
+                background: 'rgba(34,197,94,0.12)',
+                border: '1px solid rgba(34,197,94,0.3)',
+                color: '#22C55E',
+              } : {
+                background: '#6366F1',
+                color: '#fff',
+              }}
+            >
+              {applied && <CheckCircle2 size={12} />}
+              {applied ? 'Applied' : 'Apply'}
+            </button>
+          ) : (
+            <button
+              onClick={() => window.open(
+                `https://www.google.com/search?q=${encodeURIComponent(company + ' internship application 2026')}`,
+                '_blank',
+                'noopener,noreferrer'
+              )}
+              title="Application link not available — visit company careers page"
+              className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
+              style={{ background: '#161616', color: '#525252', border: '1px solid #222222' }}
+            >
+              Apply
+            </button>
+          )}
+          {!applied && (
+            <p className="text-center text-[10px] leading-none" style={{ color: '#3d3d3d' }}>
+              {link ? 'Direct application link' : 'Application link not available'}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -435,13 +449,31 @@ export default function InternshipsClient({ internships, userSectors, userLocati
                   {internship.deadline && <DeadlineBadge deadline={internship.deadline} />}
                   {match !== null && <MatchBadge pct={match} />}
                 </div>
-                {internship.link && (
-                  <button
-                    onClick={() => handleApply(internship) || window.open(`/api/apply/${internship.id}`, '_blank', 'noopener,noreferrer')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-[6px] shrink-0 transition-all duration-150"
-                    style={{ background: '#6366F1', color: '#fff' }}>
-                    Apply
-                  </button>
+                {internship.link ? (
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => { window.open(`/api/apply/${internship.id}`, '_blank', 'noopener,noreferrer'); handleApply(internship) }}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all duration-150"
+                      style={{ background: '#6366F1', color: '#fff' }}>
+                      Apply
+                    </button>
+                    <span className="text-[9px] leading-none" style={{ color: '#3d3d3d' }}>Direct link</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => window.open(
+                        `https://www.google.com/search?q=${encodeURIComponent(internship.company + ' internship application 2026')}`,
+                        '_blank',
+                        'noopener,noreferrer'
+                      )}
+                      title="Application link not available — visit company careers page"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all duration-150"
+                      style={{ background: '#161616', color: '#525252', border: '1px solid #222222' }}>
+                      Apply
+                    </button>
+                    <span className="text-[9px] leading-none text-center" style={{ color: '#3d3d3d', maxWidth: '64px' }}>No direct link</span>
+                  </div>
                 )}
               </div>
             )
