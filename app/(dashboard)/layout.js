@@ -1,4 +1,3 @@
-import { UserButton } from '@clerk/nextjs'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Sidebar from './_components/Sidebar'
@@ -22,17 +21,12 @@ export default async function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex h-screen bg-zinc-50 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#0A0A0A' }}>
       <Sidebar />
 
+      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {/* Top bar */}
-        <header className="bg-white border-b border-slate-100 px-6 py-3 flex items-center justify-end shrink-0 gap-3">
-          <UserButton afterSignOutUrl="/" />
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 pb-24 md:pb-8">
           {children}
         </main>
       </div>

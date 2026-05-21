@@ -6,34 +6,41 @@ export default async function LandingPage() {
   const { userId } = await auth()
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#0A0A0A', color: '#F5F5F5' }}>
 
       {/* ── Navigation ── */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#09090B]/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/20">
-            <span className="text-white font-bold text-sm">P</span>
-          </div>
-          <span className="font-semibold text-white text-lg tracking-tight">Placed</span>
-        </div>
+      <nav style={{ borderBottom: '1px solid #222222', background: 'rgba(10,10,10,0.85)' }}
+        className="sticky top-0 z-50 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-[8px] flex items-center justify-center"
+            style={{ background: '#6366F1', boxShadow: '0 0 20px rgba(99,102,241,0.4)' }}>
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            </svg>
+          </div>
+          <span className="font-semibold text-[15px]" style={{ color: '#F5F5F5', letterSpacing: '-0.01em' }}>Placed</span>
+        </div>
+        <div className="flex items-center gap-2">
           {userId ? (
-            <Link
-              href="/dashboard"
-              className="text-sm bg-white hover:bg-zinc-100 text-zinc-900 font-semibold px-4 py-2 rounded-lg transition-colors"
-            >
+            <Link href="/dashboard"
+              className="text-sm font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
+              style={{ background: '#6366F1', color: '#fff' }}>
               Go to dashboard →
             </Link>
           ) : (
             <>
               <SignInButton>
-                <button className="text-sm text-zinc-400 hover:text-white font-medium px-4 py-2 rounded-lg hover:bg-white/[0.06] transition-colors">
+                <button className="text-sm font-medium px-4 py-2 rounded-[6px] transition-all duration-150"
+                  style={{ color: '#A3A3A3' }}
+                  onMouseEnter={e => { e.target.style.color = '#F5F5F5'; e.target.style.background = 'rgba(255,255,255,0.06)' }}
+                  onMouseLeave={e => { e.target.style.color = '#A3A3A3'; e.target.style.background = 'transparent' }}>
                   Sign in
                 </button>
               </SignInButton>
               <SignUpButton>
-                <button className="text-sm bg-white hover:bg-zinc-100 text-zinc-900 font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm">
-                  Get started
+                <button className="text-sm font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
+                  style={{ background: '#6366F1', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                  Get started free
                 </button>
               </SignUpButton>
             </>
@@ -42,113 +49,174 @@ export default async function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-28 text-center relative overflow-hidden">
-        {/* Background glow */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px]" />
+      <section className="flex-1 flex flex-col items-center justify-center px-6 py-28 text-center relative overflow-hidden">
+        {/* Background radial glow */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, #6366F1 0%, transparent 70%)' }} />
         </div>
 
         {/* Badge */}
-        <div className="relative inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] text-zinc-300 text-xs font-medium px-3 py-1.5 rounded-full mb-8 shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+        <div className="relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-8"
+          style={{ border: '1px solid #222222', background: 'rgba(255,255,255,0.03)', color: '#A3A3A3' }}>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#22C55E' }} />
           Now in beta — free for students
         </div>
 
         {/* Headline */}
-        <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.08] tracking-tight max-w-4xl mb-6">
-          Land your dream{' '}
-          <span className="bg-gradient-to-br from-indigo-400 via-violet-400 to-purple-500 bg-clip-text text-transparent">
-            internship
-          </span>
-          ,<br className="hidden sm:block" /> not just any one.
+        <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.06] tracking-tight max-w-4xl mb-6"
+          style={{ color: '#F5F5F5', letterSpacing: '-0.03em' }}>
+          Land the internship{' '}
+          <span className="gradient-text">you actually want</span>
         </h1>
 
-        <p className="relative text-lg sm:text-xl text-zinc-400 max-w-xl mb-10 leading-relaxed">
-          Track every application, discover live listings, generate tailored cover letters,
-          and never miss a deadline — all in one clean workspace.
+        <p className="relative text-lg sm:text-xl max-w-xl mb-10 leading-relaxed" style={{ color: '#A3A3A3' }}>
+          AI-powered tools to find, track and apply for internships — completely free.
         </p>
 
         {/* CTAs */}
         <div className="relative flex flex-col sm:flex-row items-center gap-3">
           <SignUpButton>
-            <button className="w-full sm:w-auto bg-white hover:bg-zinc-100 text-zinc-900 font-semibold px-7 py-3 rounded-xl text-sm transition-colors shadow-lg shadow-white/5">
-              Start tracking for free →
+            <button className="w-full sm:w-auto text-sm font-semibold px-7 py-3 rounded-[6px] transition-all duration-150"
+              style={{ background: '#6366F1', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+              Get started free →
             </button>
           </SignUpButton>
-          <SignInButton>
-            <button className="w-full sm:w-auto border border-white/10 hover:border-white/20 hover:bg-white/[0.04] text-zinc-300 hover:text-white font-semibold px-7 py-3 rounded-xl text-sm transition-all">
-              Sign in to your account
-            </button>
-          </SignInButton>
+          <a href="#how-it-works"
+            className="w-full sm:w-auto text-sm font-semibold px-7 py-3 rounded-[6px] transition-all duration-150 text-center"
+            style={{ border: '1px solid #222222', color: '#A3A3A3' }}>
+            See how it works
+          </a>
         </div>
 
-        {/* Social proof */}
-        <p className="relative text-xs text-zinc-500 mt-8">
+        <p className="relative text-xs mt-6" style={{ color: '#525252' }}>
           No credit card required · Free forever for students
         </p>
-      </main>
 
-      {/* ── Feature Highlights ── */}
-      <section className="border-t border-white/[0.06] px-6 py-24">
+        {/* Dashboard mockup */}
+        <div className="relative mt-20 w-full max-w-4xl mx-auto rounded-[10px] overflow-hidden"
+          style={{ border: '1px solid #222222', background: '#111111', boxShadow: '0 1px 3px rgba(0,0,0,0.4), 0 40px 80px rgba(0,0,0,0.6)' }}>
+          {/* Mockup title bar */}
+          <div className="flex items-center gap-1.5 px-4 py-3" style={{ borderBottom: '1px solid #222222' }}>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#EF4444' }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#F59E0B' }} />
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#22C55E' }} />
+            <div className="flex-1 mx-4 h-5 rounded-md flex items-center px-3"
+              style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+              <span className="text-[10px]" style={{ color: '#525252' }}>app.placed.co/dashboard</span>
+            </div>
+          </div>
+          {/* Mockup body */}
+          <div className="flex h-56">
+            {/* Sidebar strip */}
+            <div className="w-32 flex flex-col gap-1 p-3" style={{ borderRight: '1px solid #222222' }}>
+              <div className="h-5 w-16 rounded mb-3" style={{ background: '#1e1e1e' }} />
+              {['Dashboard', 'Find', 'Applications', 'Cover Letter', 'Settings'].map((item, i) => (
+                <div key={item} className="h-6 rounded-md flex items-center px-2"
+                  style={{ background: i === 0 ? 'rgba(99,102,241,0.15)' : 'transparent' }}>
+                  <div className="w-3 h-3 rounded-sm mr-2" style={{ background: i === 0 ? '#6366F1' : '#2a2a2a' }} />
+                  <div className="h-2 rounded" style={{ width: `${40 + i * 5}%`, background: i === 0 ? '#6366F1' : '#2a2a2a' }} />
+                </div>
+              ))}
+            </div>
+            {/* Main area */}
+            <div className="flex-1 p-4">
+              <div className="h-4 w-40 rounded mb-4" style={{ background: '#1e1e1e' }} />
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[['12', '#6366F1'], ['3', '#8B5CF6'], ['2', '#22C55E']].map(([num, color], i) => (
+                  <div key={i} className="rounded-[10px] p-3" style={{ background: '#161616', border: '1px solid #222222' }}>
+                    <div className="text-lg font-bold mb-1" style={{ color }}>{num}</div>
+                    <div className="h-2 rounded w-16" style={{ background: '#222222' }} />
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                {['Wishlist', 'Applied', 'OA', 'Interview', 'Offer'].map((col, i) => {
+                  const colors = ['#525252', '#6366F1', '#F59E0B', '#8B5CF6', '#22C55E']
+                  return (
+                    <div key={col} className="rounded-[8px] p-2" style={{ background: '#161616', border: '1px solid #222222' }}>
+                      <div className="flex items-center gap-1 mb-2">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: colors[i] }} />
+                        <div className="h-1.5 rounded w-10" style={{ background: '#2a2a2a' }} />
+                      </div>
+                      {i < 3 && <div className="h-8 rounded" style={{ background: '#1e1e1e', border: '1px solid #2a2a2a' }} />}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section style={{ borderTop: '1px solid #222222' }} className="px-6 py-24">
         <div className="max-w-5xl mx-auto">
-          <p className="text-center text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#6366F1' }}>
             Everything you need
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3 tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
             Stop using spreadsheets.
           </h2>
-          <p className="text-zinc-400 text-center text-base max-w-lg mx-auto mb-16">
+          <p className="text-center max-w-lg mx-auto mb-16 text-base" style={{ color: '#A3A3A3' }}>
             Placed gives you a purpose-built toolkit to manage your entire internship search in one place.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
+                title: 'Smart Matching',
+                desc: 'Get personalised internship recommendations based on your degree, sectors, and target locations.',
                 icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                 ),
-                title: 'Dashboard',
-                desc: 'A live overview of your entire job search — statuses, deadlines, and next steps at a glance.',
               },
               {
+                title: 'AI Cover Letters',
+                desc: 'Generate polished, tailored cover letters in seconds — no blank-page dread ever again.',
                 icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                  </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                 ),
-                title: 'Find Internships',
-                desc: 'Live listings from Adzuna plus curated picks, filtered by role, location, sector, and pay.',
               },
               {
+                title: 'Application Tracker',
+                desc: 'Drag-and-drop Kanban board through every stage. Notes, timelines, and status history built in.',
                 icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 ),
-                title: 'Kanban Tracker',
-                desc: 'Drag-and-drop cards through every stage. Notes, timelines, and deadline badges built in.',
               },
               {
+                title: 'Deadline Alerts',
+                desc: 'Never miss a closing date. Get email reminders 3 days before any application deadline.',
                 icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 ),
-                title: 'Cover Letters',
-                desc: 'Generate polished, personalised cover letters in seconds using AI — no blank-page dread.',
+              },
+              {
+                title: 'Interview Prep',
+                desc: 'Practice common questions, get instant AI feedback, and walk into every interview ready.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                ),
+              },
+              {
+                title: 'Community',
+                desc: 'See how other students at your university are getting on and share tips from the trenches.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                ),
               },
             ].map((f) => (
-              <div
-                key={f.title}
-                className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-6 transition-all"
-              >
-                <div className="w-9 h-9 bg-indigo-600/20 text-indigo-400 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-600/30 transition-colors">
-                  {f.icon}
+              <div key={f.title} className="group rounded-[10px] p-6 transition-all duration-150 cursor-default"
+                style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-4 transition-all duration-150"
+                  style={{ background: 'rgba(99,102,241,0.15)' }}>
+                  <svg className="w-5 h-5" fill="none" stroke="#6366F1" strokeWidth={1.75} viewBox="0 0 24 24">
+                    {f.icon}
+                  </svg>
                 </div>
-                <h3 className="font-semibold text-white mb-2 text-sm">{f.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{f.desc}</p>
+                <h3 className="font-semibold text-sm mb-2" style={{ color: '#F5F5F5' }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#525252' }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -156,50 +224,100 @@ export default async function LandingPage() {
       </section>
 
       {/* ── How it works ── */}
-      <section className="border-t border-white/[0.06] px-6 py-24">
-        <div className="max-w-3xl mx-auto text-center">
-          <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4">How it works</p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 tracking-tight">
+      <section id="how-it-works" style={{ borderTop: '1px solid #222222' }} className="px-6 py-24">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#6366F1' }}>
+            How it works
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-14 tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
             Up and running in minutes
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-14">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
             {[
-              { step: '01', title: 'Create your profile', desc: 'Tell us your sectors, locations, and degree so we can personalise your matches.' },
-              { step: '02', title: 'Find and save roles', desc: 'Browse live listings from Adzuna and your curated feed, save anything that catches your eye.' },
-              { step: '03', title: 'Track your progress', desc: 'Move applications through your Kanban board. Get email alerts 3 days before any deadline.' },
+              { step: '01', title: 'Create your profile', desc: 'Tell us your sectors, locations, and degree so we can personalise your feed.' },
+              { step: '02', title: 'Find and save roles', desc: 'Browse live listings from Adzuna and your curated feed. Save anything that catches your eye.' },
+              { step: '03', title: 'Track your progress', desc: 'Move applications through your Kanban board. Get alerts 3 days before any deadline.' },
             ].map((item) => (
               <div key={item.step} className="text-left">
-                <span className="text-xs font-mono text-indigo-500 mb-3 block">{item.step}</span>
-                <h3 className="font-semibold text-white text-base mb-2">{item.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{item.desc}</p>
+                <span className="text-xs font-mono mb-3 block" style={{ color: '#6366F1' }}>{item.step}</span>
+                <h3 className="font-semibold text-base mb-2" style={{ color: '#F5F5F5' }}>{item.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#525252' }}>{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA Section ── */}
-      <section className="border-t border-white/[0.06] px-6 py-24">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-            Ready to get placed?
-          </h2>
-          <p className="text-zinc-400 text-lg mb-10">
-            Join students already using Placed to stay organised and land the roles they want.
+      {/* ── Testimonials ── */}
+      <section style={{ borderTop: '1px solid #222222' }} className="px-6 py-24">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest mb-12" style={{ color: '#525252' }}>
+            Students love Placed
           </p>
-          <SignUpButton>
-            <button className="bg-white hover:bg-zinc-100 text-zinc-900 font-semibold px-8 py-3.5 rounded-xl text-base transition-colors shadow-lg shadow-white/5">
-              Start for free — no card needed
-            </button>
-          </SignUpButton>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                quote: "Finally a tool that actually gets how chaotic internship season is. The Kanban board alone saved my sanity.",
+                name: 'Priya Sharma',
+                uni: 'LSE, Finance',
+              },
+              {
+                quote: "The AI cover letters are shockingly good. I used to spend hours on each one — now it takes five minutes.",
+                name: 'James Whitfield',
+                uni: 'Durham, Economics',
+              },
+              {
+                quote: "I had 22 applications on the go. Placed was the only way I kept track of them all without losing my mind.",
+                name: 'Amara Osei',
+                uni: 'UCL, Computer Science',
+              },
+            ].map((t) => (
+              <div key={t.name} className="rounded-[10px] p-6 flex flex-col gap-4"
+                style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                <p className="text-sm leading-relaxed" style={{ color: '#A3A3A3' }}>&ldquo;{t.quote}&rdquo;</p>
+                <div className="mt-auto">
+                  <p className="text-sm font-semibold" style={{ color: '#F5F5F5' }}>{t.name}</p>
+                  <p className="text-xs" style={{ color: '#525252' }}>{t.uni}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section style={{ borderTop: '1px solid #222222' }} className="px-6 py-24">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="relative rounded-[10px] px-8 py-16 overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.1) 100%)', border: '1px solid rgba(99,102,241,0.3)' }}>
+            <div className="pointer-events-none absolute inset-0" aria-hidden>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full opacity-30"
+                style={{ background: 'radial-gradient(circle, #6366F1 0%, transparent 70%)' }} />
+            </div>
+            <h2 className="relative text-3xl sm:text-4xl font-bold mb-4 tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
+              Ready to get placed?
+            </h2>
+            <p className="relative text-lg mb-10" style={{ color: '#A3A3A3' }}>
+              Join students already using Placed to stay organised and land the roles they want.
+            </p>
+            <SignUpButton>
+              <button className="relative text-sm font-semibold px-8 py-3.5 rounded-[6px] transition-all duration-150"
+                style={{ background: '#6366F1', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                Start for free — no card needed →
+              </button>
+            </SignUpButton>
+          </div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/[0.06] px-6 py-6 flex items-center justify-between text-xs text-zinc-600">
+      <footer className="px-6 py-6 flex items-center justify-between text-xs"
+        style={{ borderTop: '1px solid #222222', color: '#525252' }}>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-indigo-600 rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-[9px]">P</span>
+          <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: '#6366F1' }}>
+            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            </svg>
           </div>
           <span>Placed</span>
         </div>

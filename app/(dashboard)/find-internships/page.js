@@ -14,15 +14,16 @@ export default async function FindInternshipsPage() {
     fetchAdzunaInternships(),
   ])
 
-  // Supabase listings first (curated), then Adzuna live listings
   const internships = [...(supabaseListings ?? []), ...adzunaListings]
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Find Internships</h1>
-        <p className="text-slate-500 mt-1">
-          Discover opportunities — {adzunaListings.length} live listings from Adzuna plus curated picks.
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight mb-1" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
+          Find Internships
+        </h1>
+        <p className="text-sm" style={{ color: '#525252' }}>
+          {adzunaListings.length} live listings from Adzuna plus curated picks.
         </p>
       </div>
       <InternshipsClient

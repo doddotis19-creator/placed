@@ -1,8 +1,8 @@
 import { ClerkProvider } from '@clerk/nextjs'
-import { Geist } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata = {
   title: 'Placed — Internship Tracker',
@@ -12,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geist.variable} h-full`}>
+      <html lang="en" className={`${inter.variable} h-full`}>
         <body className="h-full antialiased">{children}</body>
       </html>
     </ClerkProvider>
