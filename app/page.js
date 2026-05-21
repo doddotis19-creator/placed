@@ -122,6 +122,67 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Differentiator ── */}
+      <section style={{ borderTop: '1px solid #222222' }} className="px-6 py-24">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4 tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.03em' }}>
+            More than a spreadsheet.
+          </h2>
+          <p className="text-center text-base max-w-lg mx-auto mb-16" style={{ color: '#525252' }}>
+            Placed handles every step of your internship search — from discovery to offer.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              {
+                step: '01',
+                title: 'Find',
+                desc: 'Browse 1,000+ vetted listings across finance, tech, law, and consulting — curated for students, no noise.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                ),
+                color: '#6366F1',
+              },
+              {
+                step: '02',
+                title: 'Apply',
+                desc: 'One-click tracked applications that auto-log to your Kanban board. Know exactly where you\'ve applied and when.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                ),
+                color: '#8B5CF6',
+              },
+              {
+                step: '03',
+                title: 'Land it',
+                desc: 'AI cover letters, mock interviews, and CV analysis to give you a real edge at every stage of the process.',
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                ),
+                color: '#22C55E',
+              },
+            ].map((col) => (
+              <div key={col.title} className="rounded-[12px] p-7 flex flex-col gap-5"
+                style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                <div>
+                  <span className="text-xs font-mono" style={{ color: col.color }}>{col.step}</span>
+                  <div className="flex items-center gap-3 mt-3 mb-3">
+                    <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
+                      style={{ background: `${col.color}18` }}>
+                      <svg className="w-5 h-5" fill="none" stroke={col.color} strokeWidth={1.75} viewBox="0 0 24 24">
+                        {col.icon}
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>{col.title}</h3>
+                  </div>
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: '#525252' }}>{col.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Features ── */}
       <section style={{ borderTop: '1px solid #222222' }} className="px-6 py-24">
         <div className="max-w-5xl mx-auto">

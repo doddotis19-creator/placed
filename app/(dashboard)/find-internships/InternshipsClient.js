@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Sparkles } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Sparkles, CheckCircle2 } from 'lucide-react'
+import Toast from '../_components/Toast'
+import PostApplyModal from '../_components/PostApplyModal'
 
 const TABS = ['All', 'For You', 'Finance', 'Technology', 'Consulting', 'Law', 'Marketing', 'Engineering']
 
@@ -63,7 +65,6 @@ function MatchBadge({ pct }) {
   )
 }
 
-// Company initial avatar
 function CompanyAvatar({ company }) {
   const colors = ['#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#22C55E', '#06B6D4']
   const idx = (company?.charCodeAt(0) ?? 0) % colors.length
@@ -75,19 +76,72 @@ function CompanyAvatar({ company }) {
   )
 }
 
-function InternshipCard({ internship, userSectors, userLocations }) {
-  const { company, role, sector, location, deadline, salary, link } = internship
+function logApplyClick(internship) {
+  try {
+    const key = 'placed_apply_clicks'
+    const existing = JSON.parse(localStorage.getItem(key) ?? '[]')
+    // Avoid duplicates
+    if (!existing.find(c => c.internshipId === internship.id)) {
+      localStorage.setItem(key, JSON.stringify([
+        ...existing,
+        { internshipId: internship.id, company: internship.company, role: internship.role, timestamp: new Date().toISOString() },
+      ]))
+    }
+  } catch {}
+}
+
+function logApplicationStatus(internship, status) {
+  try {
+    const key = 'placed_saved_applications'
+    const existing = JSON.parse(localStorage.getItem(key) ?? '[]')
+    if (!existing.find(a => a.internship_id === internship.id)) {
+      localStorage.setItem(key, JSON.stringify([
+        ...existing,
+        {
+          internship_id: internship.id,
+          company: internship.company,
+          role: internship.role,
+          sector: internship.sector ?? null,
+          location: internship.location ?? null,
+          deadline: internship.deadline ?? null,
+          salary: internship.salary ?? null,
+          link: internship.link ?? null,
+          status,
+          notes: '',
+          created_at: new Date().toISOString(),
+        },
+      ]))
+    }
+  } catch {}
+}
+
+function InternshipCard({ internship, userSectors, userLocations, onApply }) {
+  const { id, company, role, sector, location, deadline, salary, link } = internship
   const match = computeMatch(internship, userSectors, userLocations)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [applied, setApplied] = useState(false)
+
+  useEffect(() => {
+    const clicks = JSON.parse(localStorage.getItem('placed_apply_clicks') ?? '[]')
+    if (clicks.some(c => c.internshipId === id)) setApplied(true)
+  }, [id])
 
   async function handleSave() {
     if (saved || saving) return
     setSaving(true)
-    // Mock: simulate save delay — no database in demo mode
-    await new Promise(r => setTimeout(r, 400))
+    await new Promise(r => setTimeout(r, 300))
     setSaving(false)
     setSaved(true)
+  }
+
+  function handleApply() {
+    if (applied) return
+    logApplyClick(internship)
+    logApplicationStatus(internship, 'Applied')
+    setApplied(true)
+    if (link) window.open(`/api/apply/${id}`, '_blank', 'noopener,noreferrer')
+    onApply(internship)
   }
 
   return (
@@ -100,9 +154,9 @@ function InternshipCard({ internship, userSectors, userLocations }) {
           <p className="font-semibold text-sm leading-snug truncate" style={{ color: '#F5F5F5' }}>{role}</p>
           <p className="text-xs truncate mt-0.5" style={{ color: '#A3A3A3' }}>{company}</p>
         </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          {match !== null && <MatchBadge pct={match} />}
-        </div>
+        {match !== null && (
+          <div className="shrink-0"><MatchBadge pct={match} /></div>
+        )}
       </div>
 
       {/* Chips */}
@@ -134,6 +188,7 @@ function InternshipCard({ internship, userSectors, userLocations }) {
 
       {/* Actions */}
       <div className="flex gap-2 mt-auto">
+        {/* Save to Wishlist */}
         <button
           onClick={handleSave}
           disabled={saving || saved}
@@ -153,15 +208,27 @@ function InternshipCard({ internship, userSectors, userLocations }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
             </svg>
           )}
-          {saved ? 'Saved' : saving ? '…' : 'Save'}
+          {saved ? 'Saved' : saving ? '...' : 'Save'}
         </button>
 
+        {/* Apply button */}
         {link ? (
-          <a href={link} target="_blank" rel="noopener noreferrer"
-            className="flex-1 text-center text-xs font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
-            style={{ background: '#6366F1', color: '#fff' }}>
-            Apply →
-          </a>
+          <button
+            onClick={handleApply}
+            disabled={applied}
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
+            style={applied ? {
+              background: 'rgba(34,197,94,0.12)',
+              border: '1px solid rgba(34,197,94,0.3)',
+              color: '#22C55E',
+            } : {
+              background: '#6366F1',
+              color: '#fff',
+            }}
+          >
+            {applied && <CheckCircle2 size={12} />}
+            {applied ? 'Applied' : 'Apply'}
+          </button>
         ) : (
           <button disabled
             className="flex-1 text-center text-xs font-semibold px-4 py-2 rounded-[6px] cursor-not-allowed"
@@ -178,8 +245,38 @@ export default function InternshipsClient({ internships, userSectors, userLocati
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('All')
   const [viewMode, setViewMode] = useState('grid')
+  const [toast, setToast] = useState(null)
+  const [postApplyModal, setPostApplyModal] = useState(null)
+  const modalTimerRef = useRef(null)
 
   const hasProfile = userSectors.length > 0 || userLocations.length > 0
+
+  const showToast = useCallback((message) => {
+    setToast({ message, key: Date.now() })
+  }, [])
+
+  function handleApply(internship) {
+    showToast("Good luck! Don't forget to log how it goes.")
+    // Show post-apply modal after 2 seconds
+    clearTimeout(modalTimerRef.current)
+    modalTimerRef.current = setTimeout(() => {
+      setPostApplyModal(internship)
+    }, 2000)
+  }
+
+  function handleModalApplied() {
+    if (!postApplyModal) return
+    logApplicationStatus(postApplyModal, 'Applied')
+    setPostApplyModal(null)
+    showToast('Added to your Applications tracker as Applied.')
+  }
+
+  function handleModalWishlist() {
+    if (!postApplyModal) return
+    logApplicationStatus(postApplyModal, 'Wishlist')
+    setPostApplyModal(null)
+    showToast('Added to your Applications tracker as Wishlist.')
+  }
 
   const filtered = internships
     .filter((i) => {
@@ -303,13 +400,19 @@ export default function InternshipsClient({ internships, userSectors, userLocati
           </div>
           <h3 className="font-semibold mb-2" style={{ color: '#F5F5F5' }}>No internships match your filters</h3>
           <p className="text-sm" style={{ color: '#525252' }}>
-            {tab === 'For You' ? "Try updating your preferences in Settings." : "Try adjusting your search or sector filter."}
+            {tab === 'For You' ? 'Try updating your preferences in Settings.' : 'Try adjusting your search or sector filter.'}
           </p>
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((internship) => (
-            <InternshipCard key={internship.id} internship={internship} userSectors={userSectors} userLocations={userLocations} />
+            <InternshipCard
+              key={internship.id}
+              internship={internship}
+              userSectors={userSectors}
+              userLocations={userLocations}
+              onApply={handleApply}
+            />
           ))}
         </div>
       ) : (
@@ -333,16 +436,32 @@ export default function InternshipsClient({ internships, userSectors, userLocati
                   {match !== null && <MatchBadge pct={match} />}
                 </div>
                 {internship.link && (
-                  <a href={internship.link} target="_blank" rel="noopener noreferrer"
+                  <button
+                    onClick={() => handleApply(internship) || window.open(`/api/apply/${internship.id}`, '_blank', 'noopener,noreferrer')}
                     className="text-xs font-semibold px-3 py-1.5 rounded-[6px] shrink-0 transition-all duration-150"
                     style={{ background: '#6366F1', color: '#fff' }}>
                     Apply
-                  </a>
+                  </button>
                 )}
               </div>
             )
           })}
         </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <Toast key={toast.key} message={toast.message} onClose={() => setToast(null)} />
+      )}
+
+      {/* Post-apply modal */}
+      {postApplyModal && (
+        <PostApplyModal
+          company={postApplyModal.company}
+          onApplied={handleModalApplied}
+          onWishlist={handleModalWishlist}
+          onDismiss={() => setPostApplyModal(null)}
+        />
       )}
     </>
   )

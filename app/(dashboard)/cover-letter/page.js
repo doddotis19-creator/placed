@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import ProBadge from '../_components/ProBadge'
 
 export default function CoverLetterPage() {
   const [company, setCompany] = useState('')
@@ -70,10 +71,13 @@ Yours sincerely,
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight mb-1" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
-          Cover Letter Generator
-        </h1>
-        <p className="text-sm" style={{ color: '#525252' }}>Generate tailored cover letters in seconds using AI.</p>
+        <div className="flex items-center gap-2.5 mb-1">
+          <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
+            Cover Letter Generator
+          </h1>
+          <ProBadge />
+        </div>
+        <p className="text-sm" style={{ color: '#525252' }}>3 free generations per month. Upgrade for unlimited.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

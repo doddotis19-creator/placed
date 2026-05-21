@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
+import { Zap } from 'lucide-react'
+import ProBadge from './ProBadge'
 
 const navItems = [
   {
@@ -47,6 +49,7 @@ const navItems = [
     href: null,
     label: 'Interview Prep',
     comingSoon: true,
+    pro: true,
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
@@ -160,9 +163,13 @@ export default function Sidebar() {
                   {!collapsed && (
                     <>
                       <span className="text-[13px] font-medium">{item.label}</span>
-                      <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded"
-                        style={{ background: '#161616', border: '1px solid #222222', color: '#525252' }}>
-                        Soon
+                      <span className="ml-auto">
+                        {item.pro ? <ProBadge /> : (
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                            style={{ background: '#161616', border: '1px solid #222222', color: '#525252' }}>
+                            Soon
+                          </span>
+                        )}
                       </span>
                     </>
                   )}
@@ -195,26 +202,30 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Upgrade card */}
+        {/* Upgrade banner */}
         {!collapsed && (
           <div className="px-3 pb-4">
-            <div className="rounded-[8px] p-3.5" style={{
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 100%)',
-              border: '1px solid rgba(99,102,241,0.3)',
-            }}>
-              <p className="text-[12px] font-semibold mb-0.5" style={{ color: '#818cf8' }}>Upgrade to Pro</p>
-              <p className="text-[11px] mb-2.5" style={{ color: '#525252' }}>Unlimited AI generations</p>
-              <button className="w-full text-[11px] font-semibold py-1.5 rounded-[5px] transition-all duration-150"
-                style={{ background: '#6366F1', color: '#fff' }}>
-                Upgrade now
-              </button>
-            </div>
+            <Link
+              href="/upgrade"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-[8px] transition-all duration-150 group"
+              style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}
+            >
+              <Zap size={14} style={{ color: '#6366F1', flexShrink: 0 }} />
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold leading-none mb-0.5" style={{ color: '#818cf8' }}>Upgrade to Pro</p>
+                <p className="text-[10px]" style={{ color: '#525252' }}>£8/month · unlock all AI tools</p>
+              </div>
+            </Link>
           </div>
         )}
-
-        {/* Collapse expand button (when collapsed) */}
+        {/* Collapsed: upgrade icon + expand button */}
         {collapsed && (
-          <div className="pb-4 flex justify-center">
+          <div className="pb-4 flex flex-col items-center gap-2">
+            <Link href="/upgrade" title="Upgrade to Pro"
+              className="p-2 rounded-[6px] transition-all duration-150"
+              style={{ color: '#6366F1', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
+              <Zap size={14} />
+            </Link>
             <button onClick={toggle} className="p-2 rounded-[6px] transition-all duration-150"
               style={{ color: '#525252', background: '#161616', border: '1px solid #222222' }}
               title="Expand sidebar">
