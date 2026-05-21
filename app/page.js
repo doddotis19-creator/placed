@@ -1,9 +1,7 @@
-import Link from 'next/link'
-import { auth } from '@clerk/nextjs/server'
-import { SignInButton, SignUpButton } from '@clerk/nextjs'
+import { SignUpButton } from '@clerk/nextjs'
+import NavButtons from './_components/NavButtons'
 
-export default async function LandingPage() {
-  const { userId } = await auth()
+export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0A0A0A', color: '#F5F5F5' }}>
@@ -20,32 +18,7 @@ export default async function LandingPage() {
           </div>
           <span className="font-semibold text-[15px]" style={{ color: '#F5F5F5', letterSpacing: '-0.01em' }}>Placed</span>
         </div>
-        <div className="flex items-center gap-2">
-          {userId ? (
-            <Link href="/dashboard"
-              className="text-sm font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
-              style={{ background: '#6366F1', color: '#fff' }}>
-              Go to dashboard →
-            </Link>
-          ) : (
-            <>
-              <SignInButton>
-                <button className="text-sm font-medium px-4 py-2 rounded-[6px] transition-all duration-150"
-                  style={{ color: '#A3A3A3' }}
-                  onMouseEnter={e => { e.target.style.color = '#F5F5F5'; e.target.style.background = 'rgba(255,255,255,0.06)' }}
-                  onMouseLeave={e => { e.target.style.color = '#A3A3A3'; e.target.style.background = 'transparent' }}>
-                  Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton>
-                <button className="text-sm font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
-                  style={{ background: '#6366F1', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
-                  Get started free
-                </button>
-              </SignUpButton>
-            </>
-          )}
-        </div>
+        <NavButtons />
       </nav>
 
       {/* ── Hero ── */}
