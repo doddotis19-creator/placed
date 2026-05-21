@@ -1,55 +1,11 @@
-import { currentUser } from '@clerk/nextjs/server'
+'use client'
+
+import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { MOCK_APPLICATIONS } from '@/lib/mock-data'
 
-export const metadata = { title: 'Dashboard — Placed' }
-
-function StatCard({ label, value, sub, color, trend }) {
-  return (
-    <div className="rounded-[10px] p-5 flex flex-col gap-1" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
-      <p className="text-xs font-medium" style={{ color: '#525252' }}>{label}</p>
-      <div className="flex items-end gap-2">
-        <span className="text-3xl font-bold tracking-tight" style={{ color: color ?? '#F5F5F5', letterSpacing: '-0.03em' }}>{value}</span>
-        {trend && (
-          <span className="text-xs font-medium mb-1" style={{ color: trend > 0 ? '#22C55E' : '#EF4444' }}>
-            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}
-          </span>
-        )}
-      </div>
-      <p className="text-xs" style={{ color: '#525252' }}>{sub}</p>
-    </div>
-  )
-}
-
-function DeadlineItem({ app }) {
-  function daysRemaining(deadline) {
-    if (!deadline) return null
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    const d = new Date(deadline); d.setHours(0, 0, 0, 0)
-    return Math.ceil((d - today) / (1000 * 60 * 60 * 24))
-  }
-
-  const days = daysRemaining(app.deadline)
-  const color = days !== null && days <= 7 ? '#EF4444' : days !== null && days <= 14 ? '#F59E0B' : '#22C55E'
-
-  return (
-    <div className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid #1a1a1a' }}>
-      <div className="min-w-0">
-        <p className="text-sm font-medium truncate" style={{ color: '#F5F5F5' }}>{app.role}</p>
-        <p className="text-xs truncate" style={{ color: '#525252' }}>{app.company}</p>
-      </div>
-      {days !== null && (
-        <span className="text-xs font-semibold ml-3 px-2 py-1 rounded-[5px] shrink-0"
-          style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
-          {days === 0 ? 'Due today' : days < 0 ? 'Closed' : `${days}d`}
-        </span>
-      )}
-    </div>
-  )
-}
-
-export default async function DashboardPage() {
-  const user = await currentUser()
+export default function DashboardPage() {
+  const { user } = useUser()
 
   const apps = MOCK_APPLICATIONS
   const today = new Date(); today.setHours(0, 0, 0, 0)
@@ -80,6 +36,12 @@ export default async function DashboardPage() {
   const now = new Date()
   const dateStr = `${dayNames[now.getDay()]}, ${now.getDate()} ${monthNames[now.getMonth()]}`
 
+  function daysRemaining(deadline) {
+    if (!deadline) return null
+    const d = new Date(deadline); d.setHours(0, 0, 0, 0)
+    return Math.ceil((d - today) / (1000 * 60 * 60 * 24))
+  }
+
   const quickActions = [
     { label: 'Generate Cover Letter', href: '/cover-letter', icon: '✦', color: '#6366F1' },
     { label: 'Find Internships', href: '/find-internships', icon: '⌕', color: '#8B5CF6' },
@@ -102,15 +64,28 @@ export default async function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Active Applications" value={activeApps} sub="in progress" color="#6366F1" trend={3} />
-        <StatCard label="Interviews Upcoming" value={interviews} sub="scheduled" color="#8B5CF6" />
-        <StatCard label="Deadlines This Week" value={upcomingDeadlines} sub="closing soon" color={upcomingDeadlines > 0 ? '#F59E0B' : '#F5F5F5'} />
+        {[
+          { label: 'Active Applications', value: activeApps, sub: 'in progress', color: '#6366F1', trend: 3 },
+          { label: 'Interviews Upcoming', value: interviews, sub: 'scheduled', color: '#8B5CF6', trend: null },
+          { label: 'Deadlines This Week', value: upcomingDeadlines, sub: 'closing soon', color: upcomingDeadlines > 0 ? '#F59E0B' : '#F5F5F5', trend: null },
+        ].map((s) => (
+          <div key={s.label} className="rounded-[10px] p-5 flex flex-col gap-1" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+            <p className="text-xs font-medium" style={{ color: '#525252' }}>{s.label}</p>
+            <div className="flex items-end gap-2">
+              <span className="text-3xl font-bold tracking-tight" style={{ color: s.color, letterSpacing: '-0.03em' }}>{s.value}</span>
+              {s.trend && (
+                <span className="text-xs font-medium mb-1" style={{ color: '#22C55E' }}>↑ {s.trend}</span>
+              )}
+            </div>
+            <p className="text-xs" style={{ color: '#525252' }}>{s.sub}</p>
+          </div>
+        ))}
       </div>
 
       {/* Two column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
 
-        {/* Left: Quick actions */}
+        {/* Left: Quick actions + recommended */}
         <div className="lg:col-span-3 rounded-[10px] p-6" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
           <h2 className="text-sm font-semibold mb-5" style={{ color: '#F5F5F5' }}>Quick actions</h2>
           <div className="grid grid-cols-2 gap-3">
@@ -118,7 +93,7 @@ export default async function DashboardPage() {
               <Link key={action.label} href={action.href}
                 className="flex items-center gap-3 p-4 rounded-[8px] transition-all duration-150 group"
                 style={{ background: '#161616', border: '1px solid #222222' }}>
-                <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0 text-sm font-bold transition-all duration-150"
+                <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0 text-sm font-bold"
                   style={{ background: `${action.color}20`, color: action.color }}>
                   {action.icon}
                 </div>
@@ -130,7 +105,7 @@ export default async function DashboardPage() {
           {/* Recommended internships */}
           <div className="mt-5 rounded-[8px] p-4" style={{ background: '#161616', border: '1px solid #222222' }}>
             <p className="text-xs font-semibold mb-3" style={{ color: '#A3A3A3' }}>Recommended for you</p>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               {[
                 { company: 'Goldman Sachs', role: 'Summer Analyst – IBD', deadline: '30 Jun', color: '#6366F1' },
                 { company: 'McKinsey & Company', role: 'Business Analyst Intern', deadline: '15 Jul', color: '#8B5CF6' },
@@ -163,27 +138,30 @@ export default async function DashboardPage() {
         <div className="lg:col-span-2 rounded-[10px] p-6" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-sm font-semibold" style={{ color: '#F5F5F5' }}>Upcoming deadlines</h2>
-            <Link href="/applications" className="text-xs font-medium transition-all duration-150" style={{ color: '#6366F1' }}>
+            <Link href="/applications" className="text-xs font-medium" style={{ color: '#6366F1' }}>
               View all →
             </Link>
           </div>
-          {deadlineApps.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center mb-3"
-                style={{ background: 'rgba(34,197,94,0.1)' }}>
-                <svg className="w-4 h-4" fill="none" stroke="#22C55E" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-              <p className="text-sm" style={{ color: '#525252' }}>No upcoming deadlines</p>
-            </div>
-          ) : (
-            <div>
-              {deadlineApps.map(app => (
-                <DeadlineItem key={app.id} app={app} />
-              ))}
-            </div>
-          )}
+          <div>
+            {deadlineApps.map(app => {
+              const days = daysRemaining(app.deadline)
+              const color = days !== null && days <= 7 ? '#EF4444' : days !== null && days <= 14 ? '#F59E0B' : '#22C55E'
+              return (
+                <div key={app.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid #1a1a1a' }}>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: '#F5F5F5' }}>{app.role}</p>
+                    <p className="text-xs truncate" style={{ color: '#525252' }}>{app.company}</p>
+                  </div>
+                  {days !== null && (
+                    <span className="text-xs font-semibold ml-3 px-2 py-1 rounded-[5px] shrink-0"
+                      style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
+                      {days === 0 ? 'Due today' : days < 0 ? 'Closed' : `${days}d`}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -191,7 +169,7 @@ export default async function DashboardPage() {
       <div className="rounded-[10px] p-6" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-sm font-semibold" style={{ color: '#F5F5F5' }}>Application pipeline</h2>
-          <Link href="/applications" className="text-xs font-medium transition-all duration-150" style={{ color: '#6366F1' }}>
+          <Link href="/applications" className="text-xs font-medium" style={{ color: '#6366F1' }}>
             Open board →
           </Link>
         </div>

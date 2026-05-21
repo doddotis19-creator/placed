@@ -1,7 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Sidebar from './_components/Sidebar'
-import { supabase } from '@/lib/supabase'
 
 export default async function DashboardLayout({ children }) {
   const { userId } = await auth()
@@ -10,15 +9,7 @@ export default async function DashboardLayout({ children }) {
     redirect('/sign-in')
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('onboarding_complete')
-    .eq('user_id', userId)
-    .single()
-
-  if (!profile?.onboarding_complete) {
-    redirect('/onboarding')
-  }
+  // Onboarding check removed — mock mode uses localStorage, no database required.
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#0A0A0A' }}>
