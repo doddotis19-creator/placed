@@ -1,7 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server'
-import { auth } from '@clerk/nextjs/server'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { MOCK_APPLICATIONS } from '@/lib/mock-data'
 
 export const metadata = { title: 'Dashboard — Placed' }
 
@@ -51,15 +50,8 @@ function DeadlineItem({ app }) {
 
 export default async function DashboardPage() {
   const user = await currentUser()
-  const { userId } = await auth()
 
-  const { data: applications } = await supabase
-    .from('user_applications')
-    .select('*')
-    .eq('user_id', userId)
-    .order('deadline', { ascending: true })
-
-  const apps = applications ?? []
+  const apps = MOCK_APPLICATIONS
   const today = new Date(); today.setHours(0, 0, 0, 0)
 
   const activeApps = apps.filter(a => !['Offer', 'Rejected'].includes(a.status)).length
@@ -77,6 +69,7 @@ export default async function DashboardPage() {
       const d = new Date(a.deadline); d.setHours(0, 0, 0, 0)
       return d >= today
     })
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
     .slice(0, 5)
 
   const hour = new Date().getHours()
@@ -103,15 +96,13 @@ export default async function DashboardPage() {
           {greeting}{user?.firstName ? `, ${user.firstName}` : ''} 👋
         </h1>
         <p className="text-sm mt-1" style={{ color: '#525252' }}>
-          {apps.length === 0
-            ? "You haven't added any applications yet. Let's fix that."
-            : `You have ${activeApps} active application${activeApps !== 1 ? 's' : ''} in progress.`}
+          You have {activeApps} active application{activeApps !== 1 ? 's' : ''} in progress.
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Active Applications" value={activeApps} sub="in progress" color="#6366F1" />
+        <StatCard label="Active Applications" value={activeApps} sub="in progress" color="#6366F1" trend={3} />
         <StatCard label="Interviews Upcoming" value={interviews} sub="scheduled" color="#8B5CF6" />
         <StatCard label="Deadlines This Week" value={upcomingDeadlines} sub="closing soon" color={upcomingDeadlines > 0 ? '#F59E0B' : '#F5F5F5'} />
       </div>
@@ -136,19 +127,36 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          {apps.length === 0 && (
-            <div className="mt-5 rounded-[8px] p-5 text-center" style={{ background: '#161616', border: '1px dashed #222222' }}>
-              <p className="text-sm font-medium mb-1" style={{ color: '#A3A3A3' }}>No applications yet</p>
-              <p className="text-xs mb-4" style={{ color: '#525252' }}>
-                Start by finding internships or adding one manually.
-              </p>
-              <Link href="/find-internships"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-[6px] transition-all duration-150"
-                style={{ background: '#6366F1', color: '#fff' }}>
-                Find internships →
-              </Link>
+          {/* Recommended internships */}
+          <div className="mt-5 rounded-[8px] p-4" style={{ background: '#161616', border: '1px solid #222222' }}>
+            <p className="text-xs font-semibold mb-3" style={{ color: '#A3A3A3' }}>Recommended for you</p>
+            <div className="flex flex-col gap-2">
+              {[
+                { company: 'Goldman Sachs', role: 'Summer Analyst – IBD', deadline: '30 Jun', color: '#6366F1' },
+                { company: 'McKinsey & Company', role: 'Business Analyst Intern', deadline: '15 Jul', color: '#8B5CF6' },
+                { company: 'Clifford Chance', role: 'Vacation Scheme', deadline: '15 Jun', color: '#EC4899' },
+              ].map((item) => (
+                <div key={item.company} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-[5px] flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                      style={{ background: item.color }}>
+                      {item.company[0]}
+                    </div>
+                    <div>
+                      <p className="text-[12px] font-medium" style={{ color: '#F5F5F5' }}>{item.company}</p>
+                      <p className="text-[10px]" style={{ color: '#525252' }}>{item.role}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-medium" style={{ color: '#525252' }}>Closes {item.deadline}</span>
+                </div>
+              ))}
             </div>
-          )}
+            <Link href="/find-internships"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold"
+              style={{ color: '#6366F1' }}>
+              Browse all listings →
+            </Link>
+          </div>
         </div>
 
         {/* Right: Upcoming deadlines */}
@@ -180,37 +188,35 @@ export default async function DashboardPage() {
       </div>
 
       {/* Application pipeline */}
-      {apps.length > 0 && (
-        <div className="rounded-[10px] p-6" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-semibold" style={{ color: '#F5F5F5' }}>Application pipeline</h2>
-            <Link href="/applications" className="text-xs font-medium transition-all duration-150" style={{ color: '#6366F1' }}>
-              Open board →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            {[
-              { label: 'Wishlist', color: '#525252' },
-              { label: 'Applied', color: '#6366F1' },
-              { label: 'OA/Test', color: '#F59E0B' },
-              { label: 'Interview', color: '#8B5CF6' },
-              { label: 'AC', color: '#EC4899' },
-              { label: 'Offer', color: '#22C55E' },
-              { label: 'Rejected', color: '#EF4444' },
-            ].map((stage) => {
-              const count = apps.filter(a => a.status === stage.label).length
-              return (
-                <div key={stage.label} className="rounded-[8px] p-3 text-center"
-                  style={{ background: '#161616', border: '1px solid #222222' }}>
-                  <div className="w-2 h-2 rounded-full mx-auto mb-2" style={{ background: stage.color }} />
-                  <div className="text-lg font-bold mb-1" style={{ color: stage.color, letterSpacing: '-0.02em' }}>{count}</div>
-                  <div className="text-[11px]" style={{ color: '#525252' }}>{stage.label}</div>
-                </div>
-              )
-            })}
-          </div>
+      <div className="rounded-[10px] p-6" style={{ background: '#111111', border: '1px solid #222222', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-sm font-semibold" style={{ color: '#F5F5F5' }}>Application pipeline</h2>
+          <Link href="/applications" className="text-xs font-medium transition-all duration-150" style={{ color: '#6366F1' }}>
+            Open board →
+          </Link>
         </div>
-      )}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {[
+            { label: 'Wishlist', color: '#525252' },
+            { label: 'Applied', color: '#6366F1' },
+            { label: 'OA/Test', color: '#F59E0B' },
+            { label: 'Interview', color: '#8B5CF6' },
+            { label: 'AC', color: '#EC4899' },
+            { label: 'Offer', color: '#22C55E' },
+            { label: 'Rejected', color: '#EF4444' },
+          ].map((stage) => {
+            const count = apps.filter(a => a.status === stage.label).length
+            return (
+              <div key={stage.label} className="rounded-[8px] p-3 text-center"
+                style={{ background: '#161616', border: '1px solid #222222' }}>
+                <div className="w-2 h-2 rounded-full mx-auto mb-2" style={{ background: stage.color }} />
+                <div className="text-lg font-bold mb-1" style={{ color: stage.color, letterSpacing: '-0.02em' }}>{count}</div>
+                <div className="text-[11px]" style={{ color: '#525252' }}>{stage.label}</div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

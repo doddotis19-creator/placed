@@ -50,36 +50,25 @@ export default function OnboardingPage() {
   }
 
   async function handleSubmit() {
-    if (!isLoaded || !user) return
+    if (!isLoaded) return
     setSaving(true)
     setError(null)
 
     try {
-      const res = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          degree_subject: form.degree_subject,
-          university: form.university,
-          graduation_year: form.graduation_year,
-          sectors: form.sectors,
-          locations: form.locations,
-          bio: form.bio,
-        }),
-      })
-
-      const json = await res.json()
-
-      if (!res.ok) {
-        const msg = json?.error ?? `Server error (${res.status})`
-        const hint = json?.hint ? ` — ${json.hint}` : ''
-        setError(`Save failed: ${msg}${hint}`)
-        return
-      }
+      // Save profile to localStorage — no database required in mock mode
+      localStorage.setItem('placed_profile', JSON.stringify({
+        degree_subject: form.degree_subject,
+        university: form.university,
+        graduation_year: form.graduation_year,
+        sectors: form.sectors,
+        locations: form.locations,
+        bio: form.bio,
+        onboarding_complete: true,
+      }))
 
       router.push('/dashboard')
     } catch (err) {
-      setError(`Network error: ${err.message}`)
+      setError(`Failed to save: ${err.message}`)
     } finally {
       setSaving(false)
     }

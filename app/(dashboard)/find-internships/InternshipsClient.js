@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 const TABS = ['All', 'For You', 'Finance', 'Technology', 'Consulting', 'Law', 'Marketing', 'Engineering']
 
@@ -75,8 +74,8 @@ function CompanyAvatar({ company }) {
   )
 }
 
-function InternshipCard({ internship, userSectors, userLocations, userId }) {
-  const { id, company, role, sector, location, deadline, salary, link } = internship
+function InternshipCard({ internship, userSectors, userLocations }) {
+  const { company, role, sector, location, deadline, salary, link } = internship
   const match = computeMatch(internship, userSectors, userLocations)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -84,12 +83,8 @@ function InternshipCard({ internship, userSectors, userLocations, userId }) {
   async function handleSave() {
     if (saved || saving) return
     setSaving(true)
-    await supabase.from('user_applications').insert({
-      user_id: userId, internship_id: id, company, role,
-      sector: sector ?? null, location: location ?? null,
-      deadline: deadline ?? null, salary: salary ?? null,
-      link: link ?? null, status: 'Wishlist', notes: '',
-    })
+    // Mock: simulate save delay — no database in demo mode
+    await new Promise(r => setTimeout(r, 400))
     setSaving(false)
     setSaved(true)
   }
@@ -178,7 +173,7 @@ function InternshipCard({ internship, userSectors, userLocations, userId }) {
   )
 }
 
-export default function InternshipsClient({ internships, userSectors, userLocations, userId }) {
+export default function InternshipsClient({ internships, userSectors, userLocations }) {
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('All')
   const [viewMode, setViewMode] = useState('grid')
@@ -311,7 +306,7 @@ export default function InternshipsClient({ internships, userSectors, userLocati
       ) : viewMode === 'grid' ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((internship) => (
-            <InternshipCard key={internship.id} internship={internship} userSectors={userSectors} userLocations={userLocations} userId={userId} />
+            <InternshipCard key={internship.id} internship={internship} userSectors={userSectors} userLocations={userLocations} />
           ))}
         </div>
       ) : (

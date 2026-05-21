@@ -1,19 +1,10 @@
-import { auth } from '@clerk/nextjs/server'
-import { supabase } from '@/lib/supabase'
+import { MOCK_APPLICATIONS } from '@/lib/mock-data'
 import KanbanBoard from './KanbanBoard'
 
 export const metadata = { title: 'My Applications — Placed' }
 
 export default async function ApplicationsPage() {
-  const { userId } = await auth()
-
-  const { data: applications } = await supabase
-    .from('user_applications')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: true })
-
-  const apps = applications ?? []
+  const apps = MOCK_APPLICATIONS
 
   const total = apps.length
   const responded = apps.filter(a => !['Wishlist', 'Applied'].includes(a.status)).length

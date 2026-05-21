@@ -18,16 +18,30 @@ export default function CoverLetterPage() {
     if (!company || !role || !jobDesc) return
     setLoading(true)
 
-    // Simulate generation — replace with real AI call when ready
-    await new Promise(r => setTimeout(r, 1800))
+    // Mock generation — replace with real AI call when ready
+    await new Promise(r => setTimeout(r, 2000))
 
-    setGenerated(`Dear Hiring Manager at ${company},
+    const toneOpening = {
+      Professional: `I am writing to apply for the ${role} position at ${company}. Having researched your organisation carefully, I believe my academic background and genuine enthusiasm for this sector make me a strong candidate for this role.`,
+      Enthusiastic: `I am thrilled to apply for the ${role} role at ${company} — an organisation I have long admired for the quality of talent it develops and the impact of its work. This opportunity genuinely excites me, and I am confident I would thrive in this environment.`,
+      Concise: `Please accept this letter as my application for the ${role} position at ${company}. I am a motivated final-year student with relevant skills and a strong interest in contributing to your team.`,
+    }
 
-I am writing to express my sincere interest in the ${role} position at ${company}. Having reviewed the role requirements carefully, I am confident that my background and passion for this field make me a strong candidate.
+    const backgroundParagraph = background
+      ? `${background}\n\nThis experience has prepared me well for a fast-paced, intellectually demanding environment such as ${company}.`
+      : `Throughout my studies, I have developed strong analytical, written, and interpersonal skills, complemented by a track record of delivering high-quality work under pressure. I thrive in collaborative, high-performance settings and consistently seek out opportunities to go beyond the minimum.`
 
-${background ? `${background}\n\n` : ''}My academic journey has equipped me with a rigorous analytical foundation, and I am particularly drawn to ${company}'s commitment to excellence and innovation. I have consistently demonstrated the ability to deliver results in fast-paced, collaborative environments.
+    setGenerated(`Dear Hiring Team,
 
-I would welcome the opportunity to discuss how my skills and enthusiasm can contribute to your team. Thank you for considering my application.
+${toneOpening[tone]}
+
+${backgroundParagraph}
+
+What draws me most to ${company} is your reputation for developing exceptional talent from an early stage, and the calibre of work you undertake. The ${role} role in particular offers exactly the kind of exposure I am seeking — working alongside experienced professionals on meaningful, high-impact projects. I have a genuine curiosity for this space and have spent considerable time developing relevant knowledge through coursework, wider reading, and extracurricular involvement.
+
+I am a quick learner, highly motivated, and determined to add value from day one. I am comfortable working with ambiguity, managing competing priorities, and communicating clearly with stakeholders at all levels. I would bring energy, rigour, and a collaborative mindset to your team.
+
+I would welcome the opportunity to discuss my application in further detail at your convenience. Thank you very much for taking the time to consider my application — I look forward to hearing from you.
 
 Yours sincerely,
 [Your Name]`)

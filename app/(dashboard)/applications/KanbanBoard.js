@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 
 const COLUMNS = [
   { id: 'Wishlist',   label: 'Wishlist',   color: '#525252' },
@@ -318,7 +317,7 @@ export default function KanbanBoard({ initialApplications }) {
     }
   }, [applications])
 
-  async function handleDrop(cardId, newStatus) {
+  function handleDrop(cardId, newStatus) {
     const app = applications.find((a) => a.id === cardId)
     if (!app || app.status === newStatus) return
 
@@ -327,19 +326,18 @@ export default function KanbanBoard({ initialApplications }) {
       ...prev,
       [cardId]: [...(prev[cardId] ?? []), { status: newStatus, changed_at: new Date().toISOString() }],
     }))
-
-    await supabase.from('user_applications').update({ status: newStatus }).eq('id', cardId)
+    // Mock mode: no database — state is kept in memory only
   }
 
-  async function handleDelete(cardId) {
+  function handleDelete(cardId) {
     if (selectedApp?.id === cardId) setSelectedApp(null)
     setApplications((prev) => prev.filter((a) => a.id !== cardId))
-    await supabase.from('user_applications').delete().eq('id', cardId)
+    // Mock mode: no database — state is kept in memory only
   }
 
-  async function handleNotesSave(cardId, notes) {
+  function handleNotesSave(cardId, notes) {
     setApplications((prev) => prev.map((a) => a.id === cardId ? { ...a, notes } : a))
-    await supabase.from('user_applications').update({ notes }).eq('id', cardId)
+    // Mock mode: no database — state is kept in memory only
   }
 
   if (applications.length === 0) {
