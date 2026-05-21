@@ -1,5 +1,6 @@
 import { MOCK_APPLICATIONS } from '@/lib/mock-data'
 import KanbanBoard from './KanbanBoard'
+import ExportButton from './ExportButton'
 
 export const metadata = { title: 'My Applications — Placed' }
 
@@ -14,11 +15,14 @@ export default async function ApplicationsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight mb-1" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
-          My Applications
-        </h1>
-        <p className="text-sm" style={{ color: '#525252' }}>Drag cards between columns to update your progress.</p>
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight mb-1" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
+            My Applications
+          </h1>
+          <p className="text-sm" style={{ color: '#525252' }}>Drag cards between columns to update your progress.</p>
+        </div>
+        <ExportButton applications={apps} />
       </div>
 
       {/* Stats bar */}
