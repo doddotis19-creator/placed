@@ -53,28 +53,34 @@ CREATE TRIGGER user_applications_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ─── Row Level Security ────────────────────────────────────────────────────────
--- Without these policies the anon key cannot read or write any rows.
--- Run this block after creating the tables above.
+-- RLS is enabled on every table. The app talks to Supabase in two ways:
+--
+--   1. Server API routes use the SERVICE ROLE key, which bypasses RLS. Every
+--      query there is explicitly scoped to the authenticated Clerk user_id, so
+--      a user can only ever read or write their own rows.
+--
+--   2. If you also want the public anon/publishable key to read rows directly
+--      from the browser (lib/supabase-client.js), configure Clerk's Supabase
+--      third-party auth integration so the Clerk user ID arrives as the JWT
+--      `sub` claim. The policies below then enforce per-user access for anon.
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_applications ENABLE ROW LEVEL SECURITY;
 
--- profiles: each row is owned by the Clerk user_id stored in the row.
--- We allow the anon/service role to read and write rows where user_id matches
--- the value passed from the client (Clerk ID). Adjust to use Supabase Auth
--- JWT claims instead if you switch away from Clerk.
+-- profiles: a user may only read/write the row whose user_id equals their
+-- Clerk ID (the JWT `sub` claim).
 CREATE POLICY "profiles: users manage own row"
   ON profiles
   FOR ALL
-  USING (true)          -- anon key may read any profile row (needed for onboarding check)
-  WITH CHECK (true);    -- anon key may insert/update (Clerk handles auth at the app layer)
+  USING (user_id = (auth.jwt() ->> 'sub'))
+  WITH CHECK (user_id = (auth.jwt() ->> 'sub'));
 
--- user_applications: same open policy — Clerk auth enforced in app code.
+-- user_applications: a user may only read/write their own application rows.
 CREATE POLICY "applications: users manage own rows"
   ON user_applications
   FOR ALL
-  USING (true)
-  WITH CHECK (true);
+  USING (user_id = (auth.jwt() ->> 'sub'))
+  WITH CHECK (user_id = (auth.jwt() ->> 'sub'));
 
 -- ─── Internships (read-only for everyone) ─────────────────────────────────────
 -- Create this table if it doesn't exist yet.

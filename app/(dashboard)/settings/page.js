@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 
 const TABS = [
@@ -38,6 +38,62 @@ export default function SettingsPage() {
     applicationUpdates: true,
   })
   const [deleteConfirm, setDeleteConfirm] = useState('')
+
+  const [profile, setProfile] = useState({
+    university: '',
+    degree_subject: '',
+    graduation_year: '',
+    sectors: [],
+    locations: [],
+    bio: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        if (active && data.profile) {
+          setProfile({
+            university: data.profile.university ?? '',
+            degree_subject: data.profile.degree_subject ?? '',
+            graduation_year: data.profile.graduation_year ? String(data.profile.graduation_year) : '',
+            sectors: data.profile.sectors ?? [],
+            locations: data.profile.locations ?? [],
+            bio: data.profile.bio ?? '',
+          })
+        }
+      })
+      .catch(() => {})
+    return () => { active = false }
+  }, [])
+
+  function toggle(key, value) {
+    setProfile((p) => ({
+      ...p,
+      [key]: p[key].includes(value) ? p[key].filter((x) => x !== value) : [...p[key], value],
+    }))
+  }
+
+  async function saveProfile() {
+    setSaving(true)
+    setSaved(false)
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile),
+      })
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2500)
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const inputStyle = {
     background: '#161616',
@@ -119,44 +175,63 @@ export default function SettingsPage() {
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium" style={{ color: '#A3A3A3' }}>University</label>
                   <input type="text" placeholder="University name"
+                    value={profile.university}
+                    onChange={(e) => setProfile((p) => ({ ...p, university: e.target.value }))}
                     className="w-full px-4 py-2.5 text-sm outline-none transition-all duration-150" style={inputStyle} {...focusHandlers} />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-medium" style={{ color: '#A3A3A3' }}>Degree subject</label>
                   <input type="text" placeholder="e.g. Computer Science"
+                    value={profile.degree_subject}
+                    onChange={(e) => setProfile((p) => ({ ...p, degree_subject: e.target.value }))}
                     className="w-full px-4 py-2.5 text-sm outline-none transition-all duration-150" style={inputStyle} {...focusHandlers} />
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium mb-2" style={{ color: '#A3A3A3' }}>Target sectors</label>
                   <div className="flex flex-wrap gap-2">
-                    {SECTORS.map((s) => (
-                      <button key={s} type="button"
-                        className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150"
-                        style={{ background: '#161616', border: '1px solid #222222', color: '#A3A3A3' }}>
-                        {s}
-                      </button>
-                    ))}
+                    {SECTORS.map((s) => {
+                      const active = profile.sectors.includes(s)
+                      return (
+                        <button key={s} type="button" onClick={() => toggle('sectors', s)}
+                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150"
+                          style={{
+                            background: active ? 'rgba(99,102,241,0.12)' : '#161616',
+                            border: `1px solid ${active ? '#6366F1' : '#222222'}`,
+                            color: active ? '#818cf8' : '#A3A3A3',
+                          }}>
+                          {s}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium mb-2" style={{ color: '#A3A3A3' }}>Preferred locations</label>
                   <div className="flex flex-wrap gap-2">
-                    {LOCATIONS.map((l) => (
-                      <button key={l} type="button"
-                        className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150"
-                        style={{ background: '#161616', border: '1px solid #222222', color: '#A3A3A3' }}>
-                        {l}
-                      </button>
-                    ))}
+                    {LOCATIONS.map((l) => {
+                      const active = profile.locations.includes(l)
+                      return (
+                        <button key={l} type="button" onClick={() => toggle('locations', l)}
+                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150"
+                          style={{
+                            background: active ? 'rgba(99,102,241,0.12)' : '#161616',
+                            border: `1px solid ${active ? '#6366F1' : '#222222'}`,
+                            color: active ? '#818cf8' : '#A3A3A3',
+                          }}>
+                          {l}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
-                <button className="px-5 py-2.5 text-sm font-semibold rounded-[6px] transition-all duration-150"
-                  style={{ background: '#6366F1', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
-                  Save changes
+                <button onClick={saveProfile} disabled={saving}
+                  className="px-5 py-2.5 text-sm font-semibold rounded-[6px] transition-all duration-150 disabled:opacity-50"
+                  style={{ background: saved ? '#22C55E' : '#6366F1', color: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                  {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save changes'}
                 </button>
               </div>
             </div>

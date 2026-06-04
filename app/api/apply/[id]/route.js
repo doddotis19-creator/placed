@@ -1,15 +1,22 @@
 import { NextResponse } from 'next/server'
-import { MOCK_INTERNSHIPS } from '@/lib/mock-data'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
-// Tracked apply redirect — logs happen client-side (localStorage), this just does the server redirect.
-// Replace MOCK_INTERNSHIPS lookup with a real DB query when Supabase is re-enabled.
+// Tracked apply redirect. Looks up a Supabase internship by id and forwards the
+// user to its application link. Adzuna listings are opened directly client-side,
+// so this only needs to resolve manually-added internships.
 export async function GET(request, { params }) {
   const { id } = await params
-  const internship = MOCK_INTERNSHIPS.find(i => i.id === id)
 
-  if (!internship?.link) {
+  const supabase = createServerSupabaseClient()
+  const { data } = await supabase
+    .from('internships')
+    .select('link')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (!data?.link) {
     return NextResponse.redirect(new URL('/find-internships', request.url))
   }
 
-  return NextResponse.redirect(internship.link)
+  return NextResponse.redirect(data.link)
 }

@@ -321,23 +321,44 @@ export default function KanbanBoard({ initialApplications }) {
     const app = applications.find((a) => a.id === cardId)
     if (!app || app.status === newStatus) return
 
+    const prevStatus = app.status
+    // Optimistic: update the UI immediately, then sync to Supabase in the background.
     setApplications((prev) => prev.map((a) => a.id === cardId ? { ...a, status: newStatus } : a))
     setStatusHistory((prev) => ({
       ...prev,
       [cardId]: [...(prev[cardId] ?? []), { status: newStatus, changed_at: new Date().toISOString() }],
     }))
-    // Mock mode: no database — state is kept in memory only
+
+    fetch(`/api/applications/${cardId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+      .then((res) => { if (!res.ok) throw new Error('sync failed') })
+      .catch(() => {
+        // Roll back on failure.
+        setApplications((prev) => prev.map((a) => a.id === cardId ? { ...a, status: prevStatus } : a))
+      })
   }
 
   function handleDelete(cardId) {
+    const prev = applications
     if (selectedApp?.id === cardId) setSelectedApp(null)
-    setApplications((prev) => prev.filter((a) => a.id !== cardId))
-    // Mock mode: no database — state is kept in memory only
+    setApplications((p) => p.filter((a) => a.id !== cardId))
+
+    fetch(`/api/applications/${cardId}`, { method: 'DELETE' })
+      .then((res) => { if (!res.ok) throw new Error('delete failed') })
+      .catch(() => setApplications(prev))
   }
 
   function handleNotesSave(cardId, notes) {
     setApplications((prev) => prev.map((a) => a.id === cardId ? { ...a, notes } : a))
-    // Mock mode: no database — state is kept in memory only
+
+    fetch(`/api/applications/${cardId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notes }),
+    }).catch(() => {})
   }
 
   if (applications.length === 0) {

@@ -39,19 +39,72 @@ function DeadlineBadge({ deadline }) {
   )
 }
 
-function computeMatch(internship, userSectors, userLocations) {
-  if (!userSectors.length && !userLocations.length) return null
-  let score = 0; let total = 0
-  if (userSectors.length) {
-    total += 60
-    if (userSectors.includes(internship.sector)) score += 60
+// Smart-matching score, out of 100:
+//   sector match 40 · location match 20 · deadline not passed 20
+//   salary listed 5 · graduation year appropriate 15
+// Adzuna listings have no deadline, so we show a neutral "Rolling" pill.
+function RollingBadge() {
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] text-[11px] font-semibold"
+      style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
+      Rolling
+    </span>
+  )
+}
+
+function SkeletonCard() {
+  return (
+    <div className="rounded-[10px] p-5 flex flex-col gap-4 animate-pulse"
+      style={{ background: '#111111', border: '1px solid #222222' }}>
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 rounded-[8px] shrink-0" style={{ background: '#1a1a1a' }} />
+        <div className="flex-1 flex flex-col gap-2">
+          <div className="h-3 rounded w-3/4" style={{ background: '#1a1a1a' }} />
+          <div className="h-2.5 rounded w-1/2" style={{ background: '#161616' }} />
+        </div>
+      </div>
+      <div className="flex gap-1.5">
+        <div className="h-5 w-16 rounded-full" style={{ background: '#1a1a1a' }} />
+        <div className="h-5 w-20 rounded-full" style={{ background: '#161616' }} />
+      </div>
+      <div className="h-8 rounded-[6px]" style={{ background: '#161616' }} />
+    </div>
+  )
+}
+
+function computeMatch(internship, userSectors, userLocations, userGradYear) {
+  const hasProfile = userSectors.length > 0 || userLocations.length > 0 || !!userGradYear
+  if (!hasProfile) return null
+
+  let score = 0
+
+  if (userSectors.length && internship.sector && userSectors.includes(internship.sector)) {
+    score += 40
   }
-  if (userLocations.length) {
-    total += 40
-    const loc = internship.location?.toLowerCase() ?? ''
-    if (userLocations.some((l) => loc.includes(l.toLowerCase()))) score += 40
+
+  if (userLocations.length && internship.location) {
+    const loc = internship.location.toLowerCase()
+    if (userLocations.some((l) => loc.includes(l.toLowerCase()))) score += 20
   }
-  return total > 0 ? Math.round((score / total) * 100) : null
+
+  if (internship.deadline) {
+    const d = new Date(internship.deadline); d.setHours(0, 0, 0, 0)
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    if (d >= today) score += 20
+  }
+
+  if (internship.salary) score += 5
+
+  if (userGradYear) {
+    if (internship.deadline) {
+      // The opportunity is appropriate if it closes on or before the user graduates.
+      if (new Date(internship.deadline).getFullYear() <= Number(userGradYear)) score += 15
+    } else {
+      score += 15
+    }
+  }
+
+  return score
 }
 
 function MatchBadge({ pct }) {
@@ -76,71 +129,49 @@ function CompanyAvatar({ company }) {
   )
 }
 
-function logApplyClick(internship) {
+// Insert (or upsert) a tracked application row in Supabase via the API route.
+// internship_id is only honoured server-side when it's a real UUID.
+async function trackApplication(internship, status) {
   try {
-    const key = 'placed_apply_clicks'
-    const existing = JSON.parse(localStorage.getItem(key) ?? '[]')
-    // Avoid duplicates
-    if (!existing.find(c => c.internshipId === internship.id)) {
-      localStorage.setItem(key, JSON.stringify([
-        ...existing,
-        { internshipId: internship.id, company: internship.company, role: internship.role, timestamp: new Date().toISOString() },
-      ]))
-    }
+    await fetch('/api/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        internship_id: internship.source === 'supabase' ? internship.id : null,
+        company: internship.company,
+        role: internship.role,
+        sector: internship.sector ?? null,
+        location: internship.location ?? null,
+        deadline: internship.deadline ?? null,
+        salary: internship.salary ?? null,
+        link: internship.link ?? null,
+        status,
+      }),
+    })
   } catch {}
 }
 
-function logApplicationStatus(internship, status) {
-  try {
-    const key = 'placed_saved_applications'
-    const existing = JSON.parse(localStorage.getItem(key) ?? '[]')
-    if (!existing.find(a => a.internship_id === internship.id)) {
-      localStorage.setItem(key, JSON.stringify([
-        ...existing,
-        {
-          internship_id: internship.id,
-          company: internship.company,
-          role: internship.role,
-          sector: internship.sector ?? null,
-          location: internship.location ?? null,
-          deadline: internship.deadline ?? null,
-          salary: internship.salary ?? null,
-          link: internship.link ?? null,
-          status,
-          notes: '',
-          created_at: new Date().toISOString(),
-        },
-      ]))
-    }
-  } catch {}
-}
-
-function InternshipCard({ internship, userSectors, userLocations, onApply }) {
-  const { id, company, role, sector, location, deadline, salary, link } = internship
-  const match = computeMatch(internship, userSectors, userLocations)
+function InternshipCard({ internship, userSectors, userLocations, userGradYear, isApplied, onApply }) {
+  const { company, role, sector, location, deadline, salary, link, description } = internship
+  const match = computeMatch(internship, userSectors, userLocations, userGradYear)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [applied, setApplied] = useState(false)
-
-  useEffect(() => {
-    const clicks = JSON.parse(localStorage.getItem('placed_apply_clicks') ?? '[]')
-    if (clicks.some(c => c.internshipId === id)) setApplied(true)
-  }, [id])
+  const [applied, setApplied] = useState(isApplied)
 
   async function handleSave() {
     if (saved || saving) return
     setSaving(true)
-    await new Promise(r => setTimeout(r, 300))
+    await trackApplication(internship, 'Wishlist')
     setSaving(false)
     setSaved(true)
   }
 
   function handleApply() {
     if (applied) return
-    logApplyClick(internship)
-    logApplicationStatus(internship, 'Applied')
+    // Optimistic: mark applied, track in the background, then open the listing.
     setApplied(true)
-    if (link) window.open(`/api/apply/${id}`, '_blank', 'noopener,noreferrer')
+    trackApplication(internship, 'Applied')
+    if (link) window.open(link, '_blank', 'noopener,noreferrer')
     onApply(internship)
   }
 
@@ -183,8 +214,15 @@ function InternshipCard({ internship, userSectors, userLocations, onApply }) {
             {salary}
           </span>
         )}
-        {deadline && <DeadlineBadge deadline={deadline} />}
+        {deadline ? <DeadlineBadge deadline={deadline} /> : <RollingBadge />}
       </div>
+
+      {/* Description snippet */}
+      {description && (
+        <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: '#525252' }}>
+          {description}
+        </p>
+      )}
 
       {/* Actions */}
       <div className="flex gap-2 mt-auto items-start">
@@ -255,7 +293,7 @@ function InternshipCard({ internship, userSectors, userLocations, onApply }) {
   )
 }
 
-export default function InternshipsClient({ internships, userSectors, userLocations }) {
+export default function InternshipsClient({ userSectors, userLocations, userGradYear, appliedKeys = [] }) {
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState('All')
   const [viewMode, setViewMode] = useState('grid')
@@ -263,7 +301,36 @@ export default function InternshipsClient({ internships, userSectors, userLocati
   const [postApplyModal, setPostApplyModal] = useState(null)
   const modalTimerRef = useRef(null)
 
-  const hasProfile = userSectors.length > 0 || userLocations.length > 0
+  const [internships, setInternships] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [liveUnavailable, setLiveUnavailable] = useState(false)
+
+  // Fetch live listings on load and whenever the search term changes (debounced
+  // 500ms). The search term is passed to Adzuna as `what`; manually-added
+  // Supabase listings are merged server-side.
+  useEffect(() => {
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (search.trim()) params.set('what', search.trim())
+      fetch(`/api/internships?${params.toString()}`, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data) => {
+          setInternships(data.internships ?? [])
+          setLiveUnavailable(!!data.liveUnavailable)
+          setLoading(false)
+        })
+        .catch((err) => { if (err.name !== 'AbortError') setLoading(false) })
+    }, search ? 500 : 0)
+
+    return () => { clearTimeout(timer); controller.abort() }
+  }, [search])
+
+  const appliedSet = new Set(appliedKeys)
+  const isApplied = (i) => appliedSet.has(`${(i.company ?? '').toLowerCase().trim()}|${(i.role ?? '').toLowerCase().trim()}`)
+
+  const hasProfile = userSectors.length > 0 || userLocations.length > 0 || !!userGradYear
 
   const showToast = useCallback((message) => {
     setToast({ message, key: Date.now() })
@@ -280,14 +347,14 @@ export default function InternshipsClient({ internships, userSectors, userLocati
 
   function handleModalApplied() {
     if (!postApplyModal) return
-    logApplicationStatus(postApplyModal, 'Applied')
+    trackApplication(postApplyModal, 'Applied')
     setPostApplyModal(null)
     showToast('Added to your Applications tracker as Applied.')
   }
 
   function handleModalWishlist() {
     if (!postApplyModal) return
-    logApplicationStatus(postApplyModal, 'Wishlist')
+    trackApplication(postApplyModal, 'Wishlist')
     setPostApplyModal(null)
     showToast('Added to your Applications tracker as Wishlist.')
   }
@@ -295,7 +362,7 @@ export default function InternshipsClient({ internships, userSectors, userLocati
   const filtered = internships
     .filter((i) => {
       if (tab === 'For You') {
-        const match = computeMatch(i, userSectors, userLocations)
+        const match = computeMatch(i, userSectors, userLocations, userGradYear)
         return match !== null && match > 0
       }
       return tab === 'All' || i.sector === tab
@@ -306,8 +373,8 @@ export default function InternshipsClient({ internships, userSectors, userLocati
     })
     .sort((a, b) => {
       if (tab === 'For You') {
-        const ma = computeMatch(a, userSectors, userLocations) ?? 0
-        const mb = computeMatch(b, userSectors, userLocations) ?? 0
+        const ma = computeMatch(a, userSectors, userLocations, userGradYear) ?? 0
+        const mb = computeMatch(b, userSectors, userLocations, userGradYear) ?? 0
         return mb - ma
       }
       return 0
@@ -396,15 +463,32 @@ export default function InternshipsClient({ internships, userSectors, userLocati
         </div>
       )}
 
+      {/* Live listings unavailable notice */}
+      {liveUnavailable && !loading && (
+        <div className="rounded-[8px] px-4 py-2.5 mb-4 flex items-center gap-2 text-xs"
+          style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#F59E0B' }}>
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          Live listings temporarily unavailable — showing saved listings only.
+        </div>
+      )}
+
       {/* Count */}
-      <p className="text-xs mb-4" style={{ color: '#525252' }}>
-        {filtered.length} {filtered.length === 1 ? 'listing' : 'listings'}
-        {tab !== 'All' ? ` in ${tab}` : ''}
-        {search ? ` matching "${search}"` : ''}
-      </p>
+      {!loading && (
+        <p className="text-xs mb-4" style={{ color: '#525252' }}>
+          {filtered.length} {filtered.length === 1 ? 'listing' : 'listings'}
+          {tab !== 'All' ? ` in ${tab}` : ''}
+          {search ? ` matching "${search}"` : ''}
+        </p>
+      )}
 
       {/* Grid / List */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[10px] p-16 text-center" style={{ background: '#111111', border: '1px solid #222222' }}>
           <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
             style={{ background: 'rgba(99,102,241,0.1)' }}>
@@ -425,6 +509,8 @@ export default function InternshipsClient({ internships, userSectors, userLocati
               internship={internship}
               userSectors={userSectors}
               userLocations={userLocations}
+              userGradYear={userGradYear}
+              isApplied={isApplied(internship)}
               onApply={handleApply}
             />
           ))}
@@ -432,7 +518,7 @@ export default function InternshipsClient({ internships, userSectors, userLocati
       ) : (
         <div className="flex flex-col gap-2">
           {filtered.map((internship) => {
-            const match = computeMatch(internship, userSectors, userLocations)
+            const match = computeMatch(internship, userSectors, userLocations, userGradYear)
             return (
               <div key={internship.id} className="flex items-center gap-4 px-5 py-4 rounded-[8px] transition-all duration-150"
                 style={{ background: '#111111', border: '1px solid #222222' }}>
@@ -446,13 +532,17 @@ export default function InternshipsClient({ internships, userSectors, userLocati
                 </div>
                 <div className="hidden sm:flex items-center gap-2 shrink-0">
                   {internship.location && <span className="text-xs" style={{ color: '#525252' }}>{internship.location}</span>}
-                  {internship.deadline && <DeadlineBadge deadline={internship.deadline} />}
+                  {internship.deadline ? <DeadlineBadge deadline={internship.deadline} /> : <RollingBadge />}
                   {match !== null && <MatchBadge pct={match} />}
                 </div>
                 {internship.link ? (
                   <div className="flex flex-col items-center gap-1 shrink-0">
                     <button
-                      onClick={() => { window.open(`/api/apply/${internship.id}`, '_blank', 'noopener,noreferrer'); handleApply(internship) }}
+                      onClick={() => {
+                        trackApplication(internship, 'Applied')
+                        window.open(internship.link, '_blank', 'noopener,noreferrer')
+                        handleApply(internship)
+                      }}
                       className="text-xs font-semibold px-3 py-1.5 rounded-[6px] transition-all duration-150"
                       style={{ background: '#6366F1', color: '#fff' }}>
                       Apply

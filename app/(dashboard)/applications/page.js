@@ -1,11 +1,13 @@
-import { MOCK_APPLICATIONS } from '@/lib/mock-data'
+import { auth } from '@clerk/nextjs/server'
+import { getApplications } from '@/lib/queries'
 import KanbanBoard from './KanbanBoard'
 import ExportButton from './ExportButton'
 
 export const metadata = { title: 'My Applications — Placed' }
 
 export default async function ApplicationsPage() {
-  const apps = MOCK_APPLICATIONS
+  const { userId } = await auth()
+  const apps = await getApplications(userId)
 
   const total = apps.length
   const responded = apps.filter(a => !['Wishlist', 'Applied'].includes(a.status)).length

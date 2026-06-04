@@ -1,19 +1,16 @@
-// Adzuna/Supabase calls temporarily disabled — using mock data in lib/mock-data.js.
-// To re-enable, uncomment the implementation below.
-
 import { NextResponse } from 'next/server'
+import { getMergedInternships } from '@/lib/queries'
 
 export const revalidate = 3600
 
-export async function GET() {
-  return NextResponse.json({ internships: [] })
-}
+export async function GET(request) {
+  const { searchParams } = new URL(request.url)
 
-/*
-import { fetchAdzunaInternships } from '@/lib/adzuna'
+  const { internships, liveUnavailable } = await getMergedInternships({
+    what: searchParams.get('what') || undefined,
+    where: searchParams.get('where') || undefined,
+    category: searchParams.get('category') || undefined,
+  })
 
-export async function GET() {
-  const internships = await fetchAdzunaInternships()
-  return NextResponse.json({ internships })
+  return NextResponse.json({ internships, liveUnavailable })
 }
-*/

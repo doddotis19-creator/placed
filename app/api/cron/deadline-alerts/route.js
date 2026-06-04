@@ -1,13 +1,5 @@
-// Supabase/Resend calls temporarily disabled — mock mode active.
-// To re-enable, uncomment the implementation below.
-
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  return Response.json({ ok: true, sent: 0, note: 'Deadline alerts disabled in mock mode.' })
-}
-
-/*
 export async function GET(request) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -64,16 +56,16 @@ export async function GET(request) {
           const deadline = new Date(app.deadline)
           const daysLeft = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24))
           const urgency =
-            daysLeft === 0 ? '🔴 Due today'
-            : daysLeft === 1 ? '🟠 1 day left'
-            : `🟡 ${daysLeft} days left`
+            daysLeft === 0 ? 'Due today'
+            : daysLeft === 1 ? '1 day left'
+            : `${daysLeft} days left`
           return `
             <tr>
               <td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#0f172a">${app.role}</td>
               <td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;color:#64748b">${app.company}</td>
               <td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;color:#64748b">${urgency}</td>
               ${app.link
-                ? `<td style="padding:12px 16px;border-bottom:1px solid #f1f5f9"><a href="${app.link}" style="color:#4f46e5;text-decoration:none;font-weight:500">Apply →</a></td>`
+                ? `<td style="padding:12px 16px;border-bottom:1px solid #f1f5f9"><a href="${app.link}" style="color:#4f46e5;text-decoration:none;font-weight:500">Apply</a></td>`
                 : '<td></td>'}
             </tr>`
         })
@@ -82,7 +74,7 @@ export async function GET(request) {
       await resend.emails.send({
         from: 'Placed <alerts@placed.app>',
         to: email,
-        subject: `⏰ ${apps.length} application deadline${apps.length !== 1 ? 's' : ''} coming up`,
+        subject: `${apps.length} application deadline${apps.length !== 1 ? 's' : ''} coming up`,
         html: `
           <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;padding:40px 24px;background:#ffffff">
             <h1 style="font-size:24px;font-weight:700;color:#0f172a;margin:0 0 8px">Deadline reminder</h1>
@@ -102,7 +94,7 @@ export async function GET(request) {
             </table>
             <a href="https://placed.app/applications"
                style="display:inline-block;background:#4f46e5;color:white;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px">
-              View my applications →
+              View my applications
             </a>
           </div>`,
       })
@@ -115,4 +107,3 @@ export async function GET(request) {
 
   return Response.json({ ok: true, sent })
 }
-*/

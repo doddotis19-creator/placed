@@ -1,13 +1,15 @@
-// Supabase calls temporarily disabled — profile is saved to localStorage client-side in mock mode.
-// To re-enable, uncomment the implementation below and restore the imports.
-
-export async function POST() {
-  return Response.json({ ok: true })
-}
-
-/*
 import { auth } from '@clerk/nextjs/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getProfile } from '@/lib/queries'
+
+export async function GET() {
+  const { userId } = await auth()
+  if (!userId) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const profile = await getProfile(userId)
+  return Response.json({ profile })
+}
 
 export async function POST(request) {
   try {
@@ -23,14 +25,7 @@ export async function POST(request) {
       return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    const {
-      degree_subject,
-      university,
-      graduation_year,
-      sectors,
-      locations,
-      bio,
-    } = body
+    const { degree_subject, university, graduation_year, sectors, locations, bio } = body
 
     const payload = {
       user_id: userId,
@@ -48,17 +43,14 @@ export async function POST(request) {
       .from('profiles')
       .upsert(payload, { onConflict: 'user_id' })
       .select()
+      .single()
 
     if (error) {
-      return Response.json(
-        { error: error.message, hint: error.hint ?? null },
-        { status: 500 }
-      )
+      return Response.json({ error: error.message, hint: error.hint ?? null }, { status: 500 })
     }
 
-    return Response.json({ ok: true, data })
+    return Response.json({ ok: true, profile: data })
   } catch (err) {
     return Response.json({ error: err.message ?? 'Unexpected server error' }, { status: 500 })
   }
 }
-*/

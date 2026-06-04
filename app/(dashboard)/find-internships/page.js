@@ -1,9 +1,22 @@
-import { MOCK_INTERNSHIPS } from '@/lib/mock-data'
+import { auth } from '@clerk/nextjs/server'
+import { getProfile, getApplications } from '@/lib/queries'
 import InternshipsClient from './InternshipsClient'
 
 export const metadata = { title: 'Find Internships — Placed' }
 
 export default async function FindInternshipsPage() {
+  const { userId } = await auth()
+
+  const [profile, applications] = await Promise.all([
+    getProfile(userId),
+    getApplications(userId),
+  ])
+
+  // Used to mark listings the user has already tracked (matched by company + role).
+  const appliedKeys = applications.map(
+    (a) => `${(a.company ?? '').toLowerCase().trim()}|${(a.role ?? '').toLowerCase().trim()}`
+  )
+
   return (
     <div>
       <div className="mb-6">
@@ -11,13 +24,14 @@ export default async function FindInternshipsPage() {
           Find Internships
         </h1>
         <p className="text-sm" style={{ color: '#525252' }}>
-          {MOCK_INTERNSHIPS.length} curated listings across finance, technology, consulting, law and more.
+          Live listings across finance, technology, consulting, law and more.
         </p>
       </div>
       <InternshipsClient
-        internships={MOCK_INTERNSHIPS}
-        userSectors={[]}
-        userLocations={[]}
+        userSectors={profile?.sectors ?? []}
+        userLocations={profile?.locations ?? []}
+        userGradYear={profile?.graduation_year ?? null}
+        appliedKeys={appliedKeys}
       />
     </div>
   )

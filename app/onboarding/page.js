@@ -59,16 +59,23 @@ export default function OnboardingPage() {
     setError(null)
 
     try {
-      // Save profile to localStorage — no database required in mock mode
-      localStorage.setItem('placed_profile', JSON.stringify({
-        degree_subject: form.degree_subject,
-        university: form.university,
-        graduation_year: form.graduation_year,
-        sectors: form.sectors,
-        locations: form.locations,
-        bio: form.bio,
-        onboarding_complete: true,
-      }))
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degree_subject: form.degree_subject,
+          university: form.university,
+          graduation_year: form.graduation_year,
+          sectors: form.sectors,
+          locations: form.locations,
+          bio: form.bio,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Could not save your profile')
+      }
 
       router.push('/dashboard')
     } catch (err) {

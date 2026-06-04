@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Sidebar from './_components/Sidebar'
+import { getProfile } from '@/lib/queries'
 
 export default async function DashboardLayout({ children }) {
   const { userId } = await auth()
@@ -9,7 +10,12 @@ export default async function DashboardLayout({ children }) {
     redirect('/sign-in')
   }
 
-  // Onboarding check removed — mock mode uses localStorage, no database required.
+  // Every dashboard page requires a completed profile. If none exists, send
+  // the user through onboarding first.
+  const profile = await getProfile(userId)
+  if (!profile) {
+    redirect('/onboarding')
+  }
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#0A0A0A' }}>

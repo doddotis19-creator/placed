@@ -1,14 +1,24 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { Sparkles, Search, LayoutGrid, Settings } from 'lucide-react'
-import { MOCK_APPLICATIONS } from '@/lib/mock-data'
 
 export default function DashboardPage() {
   const { user } = useUser()
 
-  const apps = MOCK_APPLICATIONS
+  const [apps, setApps] = useState([])
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/applications')
+      .then((r) => r.json())
+      .then((data) => { if (active) setApps(data.applications ?? []) })
+      .catch(() => {})
+    return () => { active = false }
+  }, [])
+
   const today = new Date(); today.setHours(0, 0, 0, 0)
 
   const activeApps = apps.filter(a => !['Offer', 'Rejected'].includes(a.status)).length
